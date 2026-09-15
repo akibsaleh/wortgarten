@@ -1,0 +1,2 @@
+- Prefers comprehensive/full tooling installations over minimal or core-only setups. When given options between lean and maximal installs, chooses maximum coverage. Confidence: 0.7
+- Prefers autonomous implementation progress — the assistant should keep going without pausing for approval, but should ask questions when genuinely confused rather than guessing or blocking silently. Confidence: 0.75

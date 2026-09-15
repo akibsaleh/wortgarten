@@ -1,0 +1,2 @@
+- Wants tools/skills installed globally/universally across all projects, not scoped to a single project. Confidence: 0.8
+- Prefers per-project selective activation of skills (e.g. via `/ecc-guide enable <profile>`) rather than loading all installed skills into every project. Wants global availability with project-specific enabling. Confidence: 0.85
