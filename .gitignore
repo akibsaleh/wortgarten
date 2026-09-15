@@ -4,5 +4,6 @@ dist/
 *.local
 scripts/voices/
 scripts/curation/
+scripts/.venv/
 .env
 .env.*
