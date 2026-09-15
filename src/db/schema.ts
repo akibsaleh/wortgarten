@@ -71,6 +71,12 @@ export interface Settings {
   streak_last_completed: string | null;
   streak_repair_used: boolean;
   onboarding_completed: boolean;
+  /** ISO date of last completed session, or null if never. P3-T4. */
+  last_session_date: string | null;
+  /** Whether local notification reminders are enabled. P3-T5. */
+  notifications_enabled: boolean;
+  /** Daily reminder time in "HH:MM" (24 h) format. P3-T5. */
+  notification_time: string;
 }
 
 const db = new Dexie('Wortgarten') as Dexie & {
@@ -87,6 +93,23 @@ db.version(1).stores({
   reviewLogs: '++id, cardId, wordId, review',
   sessions: '++id, started',
   settings: 'id',
+});
+
+// P3-T5 — add notification settings fields
+db.version(2).stores({
+  words: 'id, freq_rank, cefr, theme',
+  cards: 'id, wordId, type, due, state',
+  reviewLogs: '++id, cardId, wordId, review',
+  sessions: '++id, started',
+  settings: 'id',
+}).upgrade(async (tx) => {
+  const settings = await tx.table('settings').get(1);
+  if (settings) {
+    await tx.table('settings').update(1, {
+      notifications_enabled: false,
+      notification_time: '09:00',
+    });
+  }
 });
 
 export { db };

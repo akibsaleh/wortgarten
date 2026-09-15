@@ -9,6 +9,7 @@ import {
   checkStreak,
   type StreakState,
 } from '../streaks/StreakManager';
+import { InstallPrompt } from '../components/InstallPrompt';
 
 export function Home() {
   const navigate = useNavigate();
@@ -112,6 +113,9 @@ export function Home() {
       >
         View progress
       </button>
+
+      {/* P3-T2: PWA install prompt — shown after onboarding, gated by session count */}
+      <InstallPrompt />
     </main>
   );
 }

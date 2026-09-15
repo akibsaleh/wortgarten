@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../db';
 import type { Settings as SettingsType } from '../db/schema';
+import { useNotifications } from '../notifications/useNotifications';
 
 const APP_VERSION = '0.1.0';
 
@@ -198,6 +199,7 @@ export function Settings() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [exporting, setExporting] = useState(false);
+  const notif = useNotifications();
 
   useEffect(() => {
     db.settings.get(1).then((s) => {
@@ -299,6 +301,75 @@ export function Settings() {
           labels={{ auto: 'Auto', on: 'On', off: 'Off' }}
         />
       </SettingGroup>
+
+      {/* Notifications — only shown if the platform supports the Notification API */}
+      {notif.isSupported && (
+        <SettingGroup label="Reminders">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 14, color: 'var(--color-ink)' }}>Daily reminder</span>
+            <button
+              role="switch"
+              aria-checked={notif.enabled}
+              onClick={notif.toggleEnabled}
+              style={{
+                width: 44,
+                height: 24,
+                borderRadius: 12,
+                border: 'none',
+                cursor: 'pointer',
+                background: notif.enabled ? 'var(--color-primary)' : 'var(--color-neutral-2)',
+                position: 'relative',
+                transition: 'background var(--motion-fast)',
+              }}
+            >
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 2,
+                  left: notif.enabled ? 22 : 2,
+                  width: 20,
+                  height: 20,
+                  borderRadius: '50%',
+                  background: '#fff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                  transition: 'left var(--motion-fast)',
+                }}
+              />
+            </button>
+          </div>
+
+          {notif.enabled && (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 13, color: 'var(--color-neutral-4)', marginBottom: 4, display: 'block' }}>
+                  Reminder time
+                </label>
+                <input
+                  type="time"
+                  value={notif.reminderTime}
+                  onChange={(e) => notif.setReminderTime(e.target.value)}
+                  style={{
+                    fontSize: 14,
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: '1px solid var(--color-neutral-2)',
+                    background: '#fff',
+                    color: 'var(--color-ink)',
+                  }}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Permission status */}
+          <p style={{ fontSize: 12, color: 'var(--color-neutral-4)', margin: 0 }}>
+            {notif.permission === 'granted' && '✓ Notification permission granted'}
+            {notif.permission === 'denied' && '✕ Notification permission denied — enable in browser settings'}
+            {notif.permission === 'default' && 'Notification permission not yet requested'}
+            {notif.permission === 'unavailable' && 'Notifications not supported on this platform'}
+          </p>
+        </SettingGroup>
+      )}
 
       {/* Data export */}
       <SettingGroup label="Data">

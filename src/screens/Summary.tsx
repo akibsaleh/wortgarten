@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/session';
 import { completeStreakDay, type StreakState } from '../streaks/StreakManager';
 import { db } from '../db/schema';
+import { todayString } from '../streaks/StreakManager';
 
 export function Summary() {
   const navigate = useNavigate();
@@ -18,6 +19,10 @@ export function Summary() {
     async function checkGoal() {
       const settings = await db.settings.get(1);
       if (!settings) return;
+
+      // Record last session date for P3-T4 reboot detection
+      await db.settings.update(1, { last_session_date: todayString() });
+
       // Check if the session met the daily goal (in minutes)
       const sessionMinutes = elapsed / 60;
       if (sessionMinutes >= settings.daily_goal_minutes || min >= settings.daily_goal_minutes) {
@@ -26,7 +31,7 @@ export function Summary() {
       }
     }
     if (startedAt) {
-      checkGoal();
+      void checkGoal();
     }
   }, [startedAt]); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -17,7 +17,7 @@ export function todayString(d: Date = new Date()): string {
 export function daysBetween(a: string, b: string): number {
   const msA = new Date(a + 'T00:00:00Z').getTime();
   const msB = new Date(b + 'T00:00:00Z').getTime();
-  return Math.round((msB - msA) / 8_640_000);
+  return Math.round((msB - msA) / 86_400_000);
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────

@@ -14,6 +14,9 @@ const DEFAULT_SETTINGS: Settings = {
   streak_last_completed: null,
   streak_repair_used: false,
   onboarding_completed: false,
+  last_session_date: null,
+  notifications_enabled: false,
+  notification_time: '09:00',
 };
 
 /**
@@ -89,6 +92,9 @@ export async function importWords(): Promise<{ imported: number; skipped: number
       streak_last_completed: current?.streak_last_completed ?? null,
       streak_repair_used: current?.streak_repair_used ?? false,
       onboarding_completed: current?.onboarding_completed ?? false,
+      last_session_date: current?.last_session_date ?? null,
+      notifications_enabled: current?.notifications_enabled ?? false,
+      notification_time: current?.notification_time ?? '09:00',
     };
     if (!current) {
       await db.settings.add({ ...DEFAULT_SETTINGS, ...settingsUpdate });

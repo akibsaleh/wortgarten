@@ -6,7 +6,9 @@ import { Summary } from './screens/Summary';
 import { Dashboard } from './screens/Dashboard';
 import { Settings } from './screens/Settings';
 import { Onboarding } from './screens/Onboarding';
+import { WelcomeBack } from './screens/WelcomeBack';
 import { importWords, db } from './db';
+import { detectAbsence } from './reboot/RebootManager';
 
 function RequireOnboarding({ children }: { children: React.ReactNode }) {
   const [checked, setChecked] = useState(false);
@@ -32,6 +34,47 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
 
   if (!completed) {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+/**
+ * P3-T4: Checks absence type and shows WelcomeBack screen for lapsed/dormant users.
+ * After a comeback session completes, switches to normal Home.
+ */
+function RequireRebootAware({ children }: { children: React.ReactNode }) {
+  const [checking, setChecking] = useState(true);
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+
+  useEffect(() => {
+    async function check() {
+      // If a comeback session just completed, skip welcome-back
+      if (sessionStorage.getItem('p3t4_comeback_done')) {
+        sessionStorage.removeItem('p3t4_comeback_done');
+        setShowWelcomeBack(false);
+        setChecking(true);
+        setChecking(false);
+        return;
+      }
+
+      const info = await detectAbsence();
+      setShowWelcomeBack(info.type === 'lapsed' || info.type === 'dormant');
+      setChecking(false);
+    }
+    void check();
+  }, []);
+
+  if (checking) {
+    return (
+      <main className="home" id="main-content">
+        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
+      </main>
+    );
+  }
+
+  if (showWelcomeBack) {
+    return <WelcomeBack />;
   }
 
   return <>{children}</>;
@@ -76,6 +119,15 @@ function FocusOnNavigate() {
 }
 
 export function App() {
+  // P3-T2: log when the PWA is actually installed
+  useEffect(() => {
+    function onInstalled() {
+      console.log('[PWA] App installed');
+    }
+    window.addEventListener('appinstalled', onInstalled);
+    return () => window.removeEventListener('appinstalled', onInstalled);
+  }, []);
+
   return (
     <>
       {/* Skip navigation — visible on keyboard focus */}
@@ -89,7 +141,9 @@ export function App() {
           path="/"
           element={
             <RequireOnboarding>
-              <Home />
+              <RequireRebootAware>
+                <Home />
+              </RequireRebootAware>
             </RequireOnboarding>
           }
         />

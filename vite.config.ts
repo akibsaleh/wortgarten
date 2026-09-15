@@ -8,6 +8,23 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['audio/**/*.ogg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ogg,png,svg}'],
+        maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // 50 MB for audio
+        runtimeCaching: [
+          {
+            urlPattern: /\/audio\/.*\.ogg$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'audio-cache',
+              expiration: {
+                maxEntries: 2000,
+                maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
+              },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Wortgarten',
         short_name: 'Wortgarten',
@@ -16,18 +33,33 @@ export default defineConfig({
         background_color: '#FBFAF7',
         display: 'standalone',
         start_url: '/',
-        icons: [],
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ogg,png,svg}'],
-        runtimeCaching: [
+        scope: '/',
+        orientation: 'portrait',
+        categories: ['education', 'language'],
+        icons: [
           {
-            urlPattern: /audio\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'audio-cache',
-              expiration: { maxEntries: 2000, maxAgeSeconds: 365 * 24 * 60 * 60 },
-            },
+            src: '/icons/icon-192x192.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-192x192.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml',
+            purpose: 'maskable',
+          },
+          {
+            src: '/icons/icon-512x512.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-512x512.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'maskable',
           },
         ],
       },

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="24" fill="#3F7D5D"/>
+  <g fill="none" stroke="#FBFAF7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Stem -->
+    <path d="M96 150 C96 150, 96 80, 96 68"/>
+    <!-- Main leaf -->
+    <path d="M96 68 C80 56, 56 52, 50 72 C44 92, 72 108, 96 96" fill="#FBFAF7" fill-opacity="0.15"/>
+    <path d="M96 68 C80 56, 56 52, 50 72 C44 92, 72 108, 96 96"/>
+    <!-- Leaf veins -->
+    <path d="M96 78 C88 74, 72 72, 64 80"/>
+    <path d="M96 86 C90 84, 76 84, 70 90"/>
+    <!-- Small leaf right -->
+    <path d="M96 82 C112 72, 130 74, 136 86 C142 98, 120 110, 96 100" fill="#FBFAF7" fill-opacity="0.15"/>
+    <path d="M96 82 C112 72, 130 74, 136 86 C142 98, 120 110, 96 100"/>
+  </g>
+  <!-- W letter -->
+  <text x="96" y="145" text-anchor="middle" font-family="Georgia, serif" font-size="22" font-weight="bold" fill="#FBFAF7" opacity="0.9">W</text>
+</svg>

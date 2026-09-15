@@ -930,3 +930,49 @@ body.reduced-motion *::after {
     transform: translateY(0);
   }
 }
+
+/* ── Install banner (P3-T2) ─────────────────────────────────
+   Calm, non-intrusive banner at the bottom of the Home screen.
+   Fades in gently; respects prefers-reduced-motion via the global rule. */
+.install-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-paper);
+  border-top: 1px solid var(--color-neutral-2);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 100;
+  animation: fadeSlideIn var(--motion-slow) var(--ease);
+}
+
+.install-banner-text {
+  font-size: var(--text-14);
+  color: var(--color-neutral-3);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.install-banner-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.install-banner-btn {
+  font-size: var(--text-14);
+  padding: var(--space-2) var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .install-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-3);
+  }
+}
