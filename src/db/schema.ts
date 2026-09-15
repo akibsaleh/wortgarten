@@ -77,7 +77,7 @@ const db = new Dexie('Wortgarten') as Dexie & {
 
 db.version(1).stores({
   words: 'id, freq_rank, cefr, theme',
-  cards: 'id, wordId, type, due',
+  cards: 'id, wordId, type, due, state',
   reviewLogs: '++id, cardId, wordId, review',
   sessions: '++id, started',
   settings: 'id',
