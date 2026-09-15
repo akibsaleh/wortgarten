@@ -36,7 +36,7 @@ export function Summary() {
   }
 
   return (
-    <main className="summary">
+    <main className="summary" id="main-content">
       <div className="summary-ripple" aria-hidden="true" />
       <h2 className="summary-title">
         Session complete

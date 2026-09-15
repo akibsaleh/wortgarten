@@ -13,6 +13,7 @@ const DEFAULT_SETTINGS: Settings = {
   streak_freezes: 0,
   streak_last_completed: null,
   streak_repair_used: false,
+  onboarding_completed: false,
 };
 
 /**
@@ -87,6 +88,7 @@ export async function importWords(): Promise<{ imported: number; skipped: number
       streak_freezes: current?.streak_freezes ?? 0,
       streak_last_completed: current?.streak_last_completed ?? null,
       streak_repair_used: current?.streak_repair_used ?? false,
+      onboarding_completed: current?.onboarding_completed ?? false,
     };
     if (!current) {
       await db.settings.add({ ...DEFAULT_SETTINGS, ...settingsUpdate });

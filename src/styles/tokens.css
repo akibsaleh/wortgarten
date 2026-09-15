@@ -17,11 +17,11 @@
   --color-die:         #9E4B63;          /* muted rose — feminine                    */
   --color-das:         #8A6D1F;          /* warm sand  — neuter                      */
 
-  /* 4 warm-gray neutrals */
+  /* 4 warm-gray neutrals — neutral-3/4 darkened for ≥4.5:1 on paper (WCAG AA) */
   --color-neutral-1:   #E8E6E1;          /* lightest — subtle dividers                */
   --color-neutral-2:   #D1CFC9;          /* borders, input outlines                  */
-  --color-neutral-3:   #B5B3AD;          /* secondary text, hints                    */
-  --color-neutral-4:   #9A9892;          /* disabled text, metadata                  */
+  --color-neutral-3:   #74726C;          /* secondary text, hints   (4.6:1 on paper) */
+  --color-neutral-4:   #6B6963;          /* disabled text, metadata (5.3:1 on paper) */
 
   /* ── Typography ──────────────────────────────────────── */
   --font-serif: 'Source Serif 4', 'Newsreader', Georgia, serif;

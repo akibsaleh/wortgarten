@@ -6,6 +6,8 @@ interface ProgressRingProps {
   size?: number;
   strokeWidth?: number;
   color?: string;
+  /** Optional label for the aria-label (e.g. "Core coverage") */
+  label?: string;
 }
 
 export function ProgressRing({
@@ -13,12 +15,15 @@ export function ProgressRing({
   size = 120,
   strokeWidth = 8,
   color = 'var(--color-accent)',
+  label,
 }: ProgressRingProps) {
   const [animatedValue, setAnimatedValue] = useState(0);
   const rafRef = useRef(0);
+
   const reducedMotion =
     typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    (window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      document.body.classList.contains('reduced-motion'));
 
   useEffect(() => {
     if (reducedMotion) {
@@ -47,11 +52,15 @@ export function ProgressRing({
   const offset = circumference * (1 - animatedValue);
   const pct = Math.round(animatedValue * 100);
 
+  const ariaLabelText = label
+    ? `${label}: ${pct}%`
+    : `${pct}%`;
+
   return (
     <svg
       width={size}
       height={size}
-      aria-label={`${pct}%`}
+      aria-label={ariaLabelText}
       role="img"
     >
       {/* track */}
@@ -60,7 +69,7 @@ export function ProgressRing({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="var(--neutral-100)"
+        stroke="var(--color-neutral-1)"
         strokeWidth={strokeWidth}
       />
       {/* fill */}

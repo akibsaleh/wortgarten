@@ -1,9 +1,13 @@
-import { useRef, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/session';
 import { grade, gradeRecognition, gradeToRating, paceFromMs } from '../scheduler/grading';
 import { rateCard } from '../scheduler/index';
 import { Rating } from 'ts-fsrs';
+import { useAudio } from '../audio/useAudio';
+
+/** Umlaut characters for non-German keyboards */
+const UMLAUTS = ['ä', 'ö', 'ü', 'ß'] as const;
 
 export function Session() {
   const navigate = useNavigate();
@@ -13,9 +17,14 @@ export function Session() {
   } = useSessionStore();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const nextBtnRef = useRef<HTMLButtonElement>(null);
   const flipTimeRef = useRef<number>(0);
   const answerTimeRef = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [showWordDetail, setShowWordDetail] = useState(false);
+  const [announceText, setAnnounceText] = useState('');
+
+  const { playWord, canPlay } = useAudio();
 
   const current = queue[currentIndex];
   const cardType = current?.cardType ?? 'production';
@@ -27,6 +36,13 @@ export function Session() {
     }
   }, [flipped, grading]);
 
+  // Focus Next button after grading
+  useEffect(() => {
+    if (grading && nextBtnRef.current) {
+      nextBtnRef.current.focus();
+    }
+  }, [grading]);
+
   // Auto-play audio when card flips in audio mode
   useEffect(() => {
     if (cardType === 'audio' && flipped && audioRef.current) {
@@ -34,6 +50,32 @@ export function Session() {
       void audioRef.current.play().catch(() => {});
     }
   }, [cardType, flipped]);
+
+  // Reset word detail view when card changes
+  useEffect(() => {
+    setShowWordDetail(false);
+  }, [currentIndex]);
+
+  // Build screen reader announcement on card flip
+  useEffect(() => {
+    if (flipped && current) {
+      const { word } = current;
+      let text = '';
+      if (word.gender) {
+        text = `${word.gender} ${word.lemma}`;
+        if (word.plural) {
+          text += `, plural ${word.plural}`;
+        } else {
+          text += `, no plural form`;
+        }
+      } else {
+        text = word.lemma;
+      }
+      setAnnounceText(text);
+    } else {
+      setAnnounceText('');
+    }
+  }, [flipped, current]);
 
   const handleSubmit = useCallback(() => {
     if (!current) return;
@@ -62,6 +104,13 @@ export function Session() {
   // Keyboard shortcuts
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
+      // P key = pronounce
+      if (e.key.toLowerCase() === 'p' && current && !e.ctrlKey && !e.metaKey) {
+        const active = document.activeElement;
+        if (active && active.tagName === 'INPUT') return; // don't intercept typing
+        playWord(current.word.id);
+        return;
+      }
       if (e.key === ' ' && !flipped && !grading) {
         e.preventDefault();
         flip();
@@ -73,7 +122,7 @@ export function Session() {
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [flipped, grading, answer, handleSubmit]);
+  }, [flipped, grading, answer, handleSubmit, current, playWord]);
 
   const handleNext = useCallback(() => {
     nextCard();
@@ -87,11 +136,26 @@ export function Session() {
     }
   }, [queue.length, navigate]);
 
+  /** Insert an umlaut character at the cursor position in the text input */
+  function insertUmlaut(char: string) {
+    const input = inputRef.current;
+    if (!input) return;
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    const newValue = answer.slice(0, start) + char + answer.slice(end);
+    setAnswer(newValue);
+    // Restore cursor position after the inserted character
+    requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(start + 1, start + 1);
+    });
+  }
+
   if (!current) {
     return (
-      <main className="session">
+      <main className="session" id="main-content">
         <p>No cards in session.</p>
-        <button onClick={() => navigate('/')}>Go home</button>
+        <button onClick={() => navigate('/')} aria-label="Go home">Go home</button>
       </main>
     );
   }
@@ -115,6 +179,22 @@ export function Session() {
     }
   }, [cardType, word.pos]);
 
+  // ── Accessible label for the answer input ──────────────────────────────────
+  const inputLabel = useMemo(() => {
+    switch (cardType) {
+      case 'production':
+        return word.pos === 'noun' ? `Answer for ${word.gloss_en}, including article` : `Answer for ${word.gloss_en}`;
+      case 'recognition':
+        return `English meaning of ${word.lemma}`;
+      case 'cloze':
+        return 'Fill in the blank';
+      case 'audio':
+        return word.pos === 'noun' ? `Type what you hear, including article` : 'Type what you hear';
+      default:
+        return 'Your answer';
+    }
+  }, [cardType, word]);
+
   // ── Prompt text shown on the card front ────────────────────────────────────
   const promptLabel = useMemo(() => {
     switch (cardType) {
@@ -127,7 +207,7 @@ export function Session() {
       case 'cloze':
         return current.clozeText ?? word.example_de;
       case 'audio':
-        return '🔊 Listen & type';
+        return 'Listen and type';
       default:
         return word.gloss_en;
     }
@@ -150,16 +230,21 @@ export function Session() {
   }, [cardType]);
 
   return (
-    <main className="session">
+    <main className="session" id="main-content">
+      {/* Screen reader live region — announces word details on flip */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {announceText}
+      </div>
+
       {/* Progress */}
-      <div className="session-progress" aria-label={progress}>
+      <div className="session-progress" aria-label={`Card ${progress}`}>
         <span className="session-progress-text">{progress}</span>
         {current.kind === 'new' && (
           <span className="badge-new">new</span>
         )}
         <span
           className="badge-type"
-          style={{ fontSize: '12px', color: 'var(--neutral-400)', marginLeft: '6px' }}
+          style={{ fontSize: '12px', color: 'var(--color-neutral-4)', marginLeft: '6px' }}
         >
           {cardType}
         </span>
@@ -187,6 +272,21 @@ export function Session() {
           }
         }}
       >
+        {/* ── Pronunciation button (top-right) ──────────────────────── */}
+        {flipped && canPlay && (
+          <button
+            className="btn-pronounce"
+            onClick={(e) => {
+              e.stopPropagation();
+              playWord(word.id);
+            }}
+            aria-label={`Pronounce ${word.lemma}`}
+            title="Pronounce (P)"
+          >
+            🔊
+          </button>
+        )}
+
         {/* ── Front: prompt (varies by cardType) ── */}
         {!flipped && (
           <div className="card-front">
@@ -262,31 +362,115 @@ export function Session() {
                     void audioRef.current.play().catch(() => {});
                   }
                 }}
+                aria-label="Replay audio"
                 style={{ marginTop: '8px', fontSize: '14px' }}
               >
                 🔊 Replay
               </button>
             )}
+
+            {/* ── Word detail info icon ──────────────────────────────── */}
+            <button
+              className="btn-word-detail"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowWordDetail(!showWordDetail);
+              }}
+              aria-label={showWordDetail ? 'Hide word details' : 'Show word details'}
+              aria-expanded={showWordDetail}
+            >
+              ℹ
+            </button>
           </div>
         )}
       </div>
 
+      {/* ── Word detail mini-view ───────────────────────────────────── */}
+      {flipped && showWordDetail && (
+        <div className="word-detail-mini" role="region" aria-label="Word details">
+          <div className="word-detail-row">
+            <span className="word-detail-label">Word</span>
+            <span className="word-detail-value">
+              {word.gender && <span className="card-article">{word.gender} </span>}
+              {word.lemma}
+            </span>
+          </div>
+          {word.plural && (
+            <div className="word-detail-row">
+              <span className="word-detail-label">Plural</span>
+              <span className="word-detail-value">{word.plural}</span>
+            </div>
+          )}
+          <div className="word-detail-row">
+            <span className="word-detail-label">Type</span>
+            <span className="word-detail-value">{word.pos}</span>
+          </div>
+          <div className="word-detail-row">
+            <span className="word-detail-label">English</span>
+            <span className="word-detail-value">{word.gloss_en}</span>
+          </div>
+          <div className="word-detail-row">
+            <span className="word-detail-label">Level</span>
+            <span className="word-detail-value">{word.cefr}</span>
+          </div>
+          {word.example_en && (
+            <div className="word-detail-row">
+              <span className="word-detail-label">Example</span>
+              <span className="word-detail-value word-detail-example">
+                {word.example_de}
+                <br />
+                <em>{word.example_en}</em>
+              </span>
+            </div>
+          )}
+          <p className="word-detail-coming-soon">
+            Full word detail coming in a later phase →
+          </p>
+        </div>
+      )}
+
       {/* Input */}
       {flipped && !grading && (
-        <div className="session-input">
-          <input
-            ref={inputRef}
-            type="text"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder={placeholder}
-            className="text-input"
-            autoComplete="off"
-            spellCheck={false}
-          />
-          <button onClick={handleSubmit} disabled={!answer.trim()} className="btn-submit">
-            Check
-          </button>
+        <div className="session-input-wrapper">
+          <div className="session-input">
+            <label htmlFor="session-answer" className="sr-only">
+              {inputLabel}
+            </label>
+            <input
+              id="session-answer"
+              ref={inputRef}
+              type="text"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder={placeholder}
+              className="text-input"
+              autoComplete="off"
+              spellCheck={false}
+              aria-label={inputLabel}
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!answer.trim()}
+              className="btn-submit"
+              aria-label="Check answer"
+            >
+              Check
+            </button>
+          </div>
+
+          {/* Umlaut helper chips */}
+          <div className="umlaut-chips" role="group" aria-label="Umlaut helper">
+            {UMLAUTS.map((char) => (
+              <button
+                key={char}
+                className="umlaut-chip"
+                onClick={() => insertUmlaut(char)}
+                aria-label={`Insert ${char}`}
+              >
+                {char}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -306,7 +490,7 @@ export function Session() {
               {grading === 'wrong' && word.pos === 'noun' && 'Remember: der/die/das'}
             </p>
           )}
-          <button onClick={handleNext} className="btn-primary" autoFocus>
+          <button ref={nextBtnRef} onClick={handleNext} className="btn-primary">
             Next
           </button>
         </div>

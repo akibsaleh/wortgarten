@@ -70,6 +70,7 @@ export interface Settings {
   streak_freezes: number;
   streak_last_completed: string | null;
   streak_repair_used: boolean;
+  onboarding_completed: boolean;
 }
 
 const db = new Dexie('Wortgarten') as Dexie & {

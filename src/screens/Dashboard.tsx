@@ -70,8 +70,8 @@ export function Dashboard() {
 
   if (!data) {
     return (
-      <main className="dashboard">
-        <p style={{ color: 'var(--neutral-300)' }}>Loading…</p>
+      <main className="dashboard" id="main-content">
+        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
       </main>
     );
   }
@@ -84,7 +84,7 @@ export function Dashboard() {
   );
 
   return (
-    <main className="dashboard">
+    <main className="dashboard" id="main-content">
       <h2
         style={{
           fontFamily: 'var(--font-serif)',
@@ -97,26 +97,29 @@ export function Dashboard() {
 
       {/* ---- Three rings ---- */}
       <div className="dashboard-rings">
-        <div className="ring-item">
+        <div className="ring-item" role="figure" aria-label={`Core coverage: ${data.reviewedCount} of ${TOTAL_WORDS} words`}>
           <ProgressRing
             value={data.reviewedCount / TOTAL_WORDS}
             color="var(--color-accent)"
+            label="Core coverage"
           />
-          <span className="ring-label">Core coverage</span>
+          <span className="ring-label" aria-hidden="true">Core coverage</span>
         </div>
-        <div className="ring-item">
+        <div className="ring-item" role="figure" aria-label={`30-day retention: ${data.retention30}%`}>
           <ProgressRing
             value={data.retention30 / 100}
             color="var(--color-der)"
+            label="30-day retention"
           />
-          <span className="ring-label">30-day retention</span>
+          <span className="ring-label" aria-hidden="true">30-day retention</span>
         </div>
-        <div className="ring-item">
+        <div className="ring-item" role="figure" aria-label={`Streak: ${data.streak.current} days`}>
           <ProgressRing
             value={Math.min(data.streak.current / 30, 1)}
             color="var(--color-das)"
+            label="Streak"
           />
-          <span className="ring-label">Streak</span>
+          <span className="ring-label" aria-hidden="true">Streak</span>
         </div>
       </div>
 

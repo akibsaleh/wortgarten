@@ -55,14 +55,14 @@ export function Home() {
 
   if (loading) {
     return (
-      <main className="home">
+      <main className="home" id="main-content">
         <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
       </main>
     );
   }
 
   return (
-    <main className="home">
+    <main className="home" id="main-content">
       <h1 className="home-title">Wortgarten</h1>
       <p className="home-subtitle">
         {dueCount > 0 ? `${dueCount} cards due` : 'All caught up'}

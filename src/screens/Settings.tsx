@@ -138,12 +138,18 @@ Wortgarten does not claim to teach "fluency." Coverage is stated per register:
 These 1,000 words represent the highest-utility core vocabulary for English-speaking learners reaching approximately B1 level.`;
 
 function SettingGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  const groupId = `setting-${label.toLowerCase().replace(/\s+/g, '-')}`;
   return (
     <div style={{ marginBottom: 28 }}>
-      <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--neutral-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
+      <h3
+        id={groupId}
+        style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-neutral-4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}
+      >
         {label}
       </h3>
-      {children}
+      <div aria-labelledby={groupId}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -160,7 +166,7 @@ function SegmentedControl<T extends string | number>({
   labels?: Record<T, string>;
 }) {
   return (
-    <div style={{ display: 'flex', gap: 4, background: 'var(--neutral-100)', borderRadius: 8, padding: 3 }} role="radiogroup">
+    <div style={{ display: 'flex', gap: 4, background: 'var(--color-neutral-1)', borderRadius: 8, padding: 3 }} role="radiogroup">
       {options.map((opt) => (
         <button
           key={opt}
@@ -176,7 +182,7 @@ function SegmentedControl<T extends string | number>({
             fontSize: 14,
             fontWeight: value === opt ? 600 : 400,
             background: value === opt ? '#fff' : 'transparent',
-            color: value === opt ? 'var(--color-ink)' : 'var(--neutral-400)',
+            color: value === opt ? 'var(--color-ink)' : 'var(--color-neutral-4)',
             boxShadow: value === opt ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             transition: 'all var(--motion-fast)',
           }}
@@ -234,14 +240,14 @@ export function Settings() {
 
   if (!settings) {
     return (
-      <main className="settings">
-        <p style={{ color: 'var(--neutral-300)' }}>Loading…</p>
+      <main className="settings" id="main-content">
+        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
       </main>
     );
   }
 
   return (
-    <main className="settings">
+    <main className="settings" id="main-content">
       {/* Header */}
       <div className="settings-header">
         <button
