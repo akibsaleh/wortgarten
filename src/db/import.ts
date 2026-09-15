@@ -8,6 +8,11 @@ const DEFAULT_SETTINGS: Settings = {
   review_cap: 60,
   reduced_motion: 'auto',
   data_version: wordsData.dataVersion,
+  streak_current: 0,
+  streak_best: 0,
+  streak_freezes: 0,
+  streak_last_completed: null,
+  streak_repair_used: false,
 };
 
 /**
@@ -74,13 +79,20 @@ export async function importWords(): Promise<{ imported: number; skipped: number
       await db.cards.bulkAdd(newCards);
     }
 
-    // Ensure default settings exist
+    // Ensure default settings exist; backfill new fields for existing users
+    const settingsUpdate: Partial<Settings> = {
+      data_version: wordsData.dataVersion,
+      streak_current: current?.streak_current ?? 0,
+      streak_best: current?.streak_best ?? 0,
+      streak_freezes: current?.streak_freezes ?? 0,
+      streak_last_completed: current?.streak_last_completed ?? null,
+      streak_repair_used: current?.streak_repair_used ?? false,
+    };
     if (!current) {
-      await db.settings.add(DEFAULT_SETTINGS);
+      await db.settings.add({ ...DEFAULT_SETTINGS, ...settingsUpdate });
+    } else {
+      await db.settings.update(1, settingsUpdate);
     }
-
-    // Record data version
-    await db.settings.update(1, { data_version: wordsData.dataVersion });
   });
 
   return { imported: words.length, skipped: 0 };

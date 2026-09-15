@@ -65,6 +65,11 @@ export interface Settings {
   review_cap: number;
   reduced_motion: 'auto' | 'on' | 'off';
   data_version: string;
+  streak_current: number;
+  streak_best: number;
+  streak_freezes: number;
+  streak_last_completed: string | null;
+  streak_repair_used: boolean;
 }
 
 const db = new Dexie('Wortgarten') as Dexie & {

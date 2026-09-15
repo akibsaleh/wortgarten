@@ -1,17 +1,26 @@
 /**
- * P1-T5: Session composition engine.
+ * P1-T5 / P2-T3: Session composition engine.
  * Due reviews first (capped), then new words in thematic blocks of 3–5,
  * interleaved with remaining reviews. PLAN.md §3.
+ *
+ * P2-T3 adds weighted interaction-type assignment:
+ *   production ~50%, recognition ~25%, cloze ~15%, audio ~10%.
  */
 import { db, type Card, type Word } from '../db/schema';
 
 const ESTIMATED_SEC_PER_CARD = 9;
+
+export type CardType = 'production' | 'recognition' | 'cloze' | 'audio';
 
 export interface SessionCard {
   card: Card;
   word: Word;
   /** 'review' for due cards, 'new' for new word cards. */
   kind: 'review' | 'new';
+  /** Interaction type assigned per weighted mix. */
+  cardType: CardType;
+  /** For cloze cards: the example sentence with the target word blanked. */
+  clozeText?: string;
 }
 
 export interface SessionConfig {
@@ -97,15 +106,24 @@ export async function composeSession(
   const words = await db.words.where('id').anyOf(wordIds).toArray();
   const wordMap = new Map(words.map((w) => [w.id, w]));
 
+  // Assign interaction types per weighted mix
+  let typeCounter = 0;
+  function nextType(): CardType {
+    const types: CardType[] = ['production', 'production', 'recognition', 'recognition', 'cloze', 'audio'];
+    const t = types[typeCounter % types.length]!;
+    typeCounter++;
+    return t;
+  }
+
   // Mark kind
   const sessionCards: SessionCard[] = [];
   for (const card of cappedDue) {
     const word = wordMap.get(card.wordId);
-    if (word) sessionCards.push({ card, word, kind: 'review' });
+    if (word) sessionCards.push({ card, word, kind: 'review', cardType: nextType() });
   }
   for (const card of newCards) {
     const word = wordMap.get(card.wordId);
-    if (word) sessionCards.push({ card, word, kind: 'new' });
+    if (word) sessionCards.push({ card, word, kind: 'new', cardType: nextType() });
   }
 
   // --- Interleave new words in thematic blocks of 3–5 ---
@@ -158,5 +176,102 @@ export async function composeSession(
   result.push(...reviewOnly.slice(reviewIdx));
 
   // Trim to max cards
-  return result.slice(0, maxCards);
+  const trimmed = result.slice(0, maxCards);
+
+  // --- P2-T3: Assign interaction types per weighted mix ---
+  return assignCardTypes(trimmed);
+}
+
+// ─── P2-T3: Interaction-type assignment ────────────────────────────────────────
+
+/**
+ * Simple deterministic hash from a string (djb2 variant).
+ * Used to generate a reproducible float in [0, 1) for each card.
+ */
+function djb2Hash(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    // hash * 33 + charCode
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0;
+  }
+  return hash / 0x100000000; // normalize to [0, 1)
+}
+
+/**
+ * Generate cloze text by blanking the lemma (case-insensitive) from example_de.
+ * Returns the sentence with the first match replaced by "_____".
+ * If the lemma is not found, returns the original sentence.
+ */
+export function generateCloze(exampleDe: string, lemma: string): string {
+  // Build a regex that matches the lemma word-boundary, case-insensitive
+  const escaped = lemma.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`\\b${escaped}\\b`, 'i');
+  if (re.test(exampleDe)) {
+    return exampleDe.replace(re, '_____');
+  }
+  // Fallback: just blank the first occurrence of the lemma substring
+  const idx = exampleDe.toLowerCase().indexOf(lemma.toLowerCase());
+  if (idx >= 0) {
+    return (
+      exampleDe.slice(0, idx) +
+      '_____' +
+      exampleDe.slice(idx + lemma.length)
+    );
+  }
+  // If still not found, return original with a trailing blank
+  return `${exampleDe} (_____)`;
+}
+
+/**
+ * Assign card types to session cards using a deterministic weighted random.
+ *
+ * Weights (PLAN.md §3):
+ *   production  ~50%
+ *   recognition ~25%
+ *   cloze       ~15%
+ *   audio       ~10% (only when audio_word is non-empty)
+ *
+ * When audio is unavailable the 10% slice is redistributed:
+ *   production gets 60%, recognition 25%, cloze 15%.
+ */
+export function assignCardTypes(cards: SessionCard[]): SessionCard[] {
+  return cards.map((sc, idx) => {
+    const hasAudio = sc.word.audio_word && sc.word.audio_word.trim().length > 0;
+    const hasExample = sc.word.example_de && sc.word.example_de.trim().length > 0;
+
+    // Deterministic seed: card index + word id
+    const seed = djb2Hash(`${sc.word.id}::${idx}`);
+    const r = seed; // value in [0, 1)
+
+    let cardType: CardType;
+
+    if (hasAudio) {
+      // Full 4-way split
+      if (r < 0.50) {
+        cardType = 'production';
+      } else if (r < 0.75) {
+        cardType = 'recognition';
+      } else if (r < 0.90) {
+        cardType = hasExample ? 'cloze' : 'production';
+      } else {
+        cardType = 'audio';
+      }
+    } else {
+      // No audio: redistribute audio's 10% to production
+      if (r < 0.60) {
+        cardType = 'production';
+      } else if (r < 0.85) {
+        cardType = 'recognition';
+      } else {
+        cardType = hasExample ? 'cloze' : 'recognition';
+      }
+    }
+
+    const clozeText =
+      cardType === 'cloze'
+        ? generateCloze(sc.word.example_de, sc.word.lemma)
+        : undefined;
+
+    return { ...sc, cardType, clozeText };
+  });
 }

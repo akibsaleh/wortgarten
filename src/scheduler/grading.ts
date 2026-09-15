@@ -122,6 +122,47 @@ export function grade(input: GradingInput): GradingOutput {
   return gradeNonNoun(input.answer, input.word);
 }
 
+/**
+ * Grade a recognition answer (EN→DE or DE→EN meaning recall).
+ * Compares the typed English answer against the word's gloss_en.
+ * Uses fuzzy matching: exact match, substring containment, or Levenshtein ≤ 1
+ * on the normalised tokens.
+ */
+export function gradeRecognition(input: GradingInput): GradingOutput {
+  const normAnswer = normalize(input.answer);
+  const gloss = input.word.gloss_en;
+  const normCorrect = normalize(gloss);
+
+  // Exact match
+  if (normAnswer === normCorrect) {
+    return { grade: 'correct', correctForm: gloss, article: null };
+  }
+
+  // Substring containment (e.g. "to learn" ↔ "learn")
+  if (normCorrect.includes(normAnswer) || normAnswer.includes(normCorrect)) {
+    return { grade: 'correct', correctForm: gloss, article: null };
+  }
+
+  // Check each token of the gloss against the answer tokens
+  const answerTokens = normAnswer.split(/\s+/).filter(Boolean);
+  const glossTokens = normCorrect.split(/\s+/).filter(Boolean);
+  const allTokensMatch = glossTokens.every((gt) =>
+    answerTokens.some(
+      (at) => at === gt || levenshtein(at, gt) <= 1,
+    ),
+  );
+  if (allTokensMatch && answerTokens.length > 0) {
+    return { grade: 'correct', correctForm: gloss, article: null };
+  }
+
+  // Close Levenshtein on full string
+  if (levenshtein(normAnswer, normCorrect) <= 1) {
+    return { grade: 'typo', correctForm: gloss, article: null };
+  }
+
+  return { grade: 'wrong', correctForm: gloss, article: null };
+}
+
 /** Pace thresholds from Amendment A6. */
 export function paceFromMs(ms: number): 'instant' | 'normal' | 'slow' {
   if (ms < 2500) return 'instant';

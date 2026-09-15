@@ -1,39 +1,6 @@
-:root {
-  /* PLAN.md §4 design tokens */
-  --color-paper: #FBFAF7;
-  --color-ink: #23282D;
-  --color-accent: #3F7D5D;
-  --color-accent-text: #2E5E46;
-  --color-der: #3B6EA5;
-  --color-die: #9E4B63;
-  --color-das: #8A6D1F;
-  --color-success: #3F7D5D;
-  --color-error: #B3563B;
+@import './tokens.css';
 
-  --neutral-100: #E8E6E1;
-  --neutral-200: #D1CFC9;
-  --neutral-300: #B5B3AD;
-  --neutral-400: #9A9892;
-
-  --font-serif: 'Source Serif 4', 'Newsreader', Georgia, serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
-  --spacing: 4px;
-  --radius: 12px;
-  --motion-fast: 120ms ease-out;
-  --motion-normal: 250ms ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* --- Reset & base --- */
+/* ── Reset ─────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -42,9 +9,11 @@
   padding: 0;
 }
 
+/* ── Body & layout ─────────────────────────────────────── */
 body {
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: var(--text-16);
+  line-height: 1.5;
   color: var(--color-ink);
   background: var(--color-paper);
   min-height: 100dvh;
@@ -52,29 +21,35 @@ body {
 }
 
 #root {
-  max-width: 640px;
+  max-width: var(--layout-max);
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: var(--space-6) var(--space-4);
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
-/* --- Buttons --- */
+/* ── Focus ring (accent) ───────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Buttons ───────────────────────────────────────────── */
 .btn-primary {
   display: block;
   width: 100%;
   max-width: 320px;
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: var(--space-3) var(--space-6);
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-paper);
   border: none;
-  border-radius: var(--radius);
-  font-size: 16px;
+  border-radius: var(--radius-card);
+  font-size: var(--text-16);
   font-weight: 500;
   cursor: pointer;
-  transition: opacity var(--motion-fast);
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .btn-primary:hover {
@@ -87,13 +62,15 @@ body {
 }
 
 .btn-submit {
-  padding: 10px 20px;
+  padding: var(--space-3) var(--space-5);
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-paper);
   border: none;
-  border-radius: var(--radius);
-  font-size: 14px;
+  border-radius: var(--radius-card);
+  font-size: var(--text-14);
+  font-weight: 500;
   cursor: pointer;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .btn-submit:disabled {
@@ -101,57 +78,97 @@ body {
   cursor: not-allowed;
 }
 
-/* --- Home --- */
+/* ── Home ──────────────────────────────────────────────── */
 .home {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
-/* --- Session --- */
+.home-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-39);
+  color: var(--color-ink);
+}
+
+.home-subtitle {
+  font-size: var(--text-16);
+  color: var(--color-neutral-4);
+  margin-bottom: var(--space-12);
+}
+
+.home-settings-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-neutral-4);
+  font-size: 22px;
+  transition: color var(--motion-fast) var(--ease);
+}
+
+.home-settings-link:hover {
+  color: var(--color-ink);
+}
+
+.home-settings-link svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+/* ── Session ───────────────────────────────────────────── */
 .session {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .session-progress {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .badge-new {
-  font-size: 12px;
-  color: var(--color-accent);
+  font-size: var(--text-12);
+  color: var(--color-accent-text);
   border: 1px solid var(--color-accent);
-  border-radius: 4px;
-  padding: 1px 6px;
+  border-radius: var(--space-1);
+  padding: 1px var(--space-2);
 }
 
-/* --- Card --- */
+/* ── Card ──────────────────────────────────────────────── */
 .card {
   width: 100%;
   max-width: 480px;
   min-height: 280px;
-  border: 1px solid var(--neutral-100);
-  border-radius: 16px;
-  background: #fff;
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-paper);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 24px;
+  padding: var(--space-8) var(--space-6);
   cursor: pointer;
   position: relative;
   overflow: hidden;
   user-select: none;
-  transition: box-shadow var(--motion-normal);
+  transition: box-shadow var(--motion-med) var(--ease);
 }
 
 .card:focus-visible {
@@ -168,14 +185,14 @@ body {
 }
 
 .card-gloss {
-  font-size: 25px;
+  font-size: var(--text-25);
   color: var(--color-ink);
 }
 
 .card-hint {
-  font-size: 14px;
-  color: var(--neutral-300);
-  margin-top: 16px;
+  font-size: var(--text-14);
+  color: var(--color-neutral-3);
+  margin-top: var(--space-4);
 }
 
 .card-back {
@@ -184,19 +201,21 @@ body {
   position: relative;
 }
 
+/* ── Gender ribbon ─────────────────────────────────────── */
 .gender-ribbon {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 4px;
-  border-radius: 16px 0 0 16px;
+  width: var(--space-1);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
 }
 
 .card-word {
-  font-size: 39px;
+  font-family: var(--font-serif);
+  font-size: var(--text-39);
   color: var(--color-ink);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .card-article {
@@ -204,40 +223,43 @@ body {
 }
 
 .card-plural {
-  font-size: 16px;
-  margin-bottom: 12px;
+  font-size: var(--text-16);
+  color: var(--color-neutral-4);
+  margin-bottom: var(--space-3);
 }
 
 .card-example {
-  font-size: 16px;
+  font-size: var(--text-16);
+  color: var(--color-neutral-3);
+  font-style: italic;
 }
 
-/* --- Input --- */
+/* ── Input ─────────────────────────────────────────────── */
 .session-input {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
   max-width: 480px;
 }
 
 .text-input {
   flex: 1;
-  padding: 12px 16px;
-  border: 1px solid var(--neutral-200);
-  border-radius: var(--radius);
-  font-size: 16px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--radius-card);
+  font-size: var(--text-16);
   font-family: var(--font-sans);
-  background: #fff;
+  background: var(--color-paper);
   color: var(--color-ink);
   outline: none;
-  transition: border-color var(--motion-fast);
+  transition: border-color var(--motion-fast) var(--ease);
 }
 
 .text-input:focus {
   border-color: var(--color-accent);
 }
 
-/* --- Feedback --- */
+/* ── Feedback ──────────────────────────────────────────── */
 .feedback {
   text-align: center;
   width: 100%;
@@ -254,29 +276,31 @@ body {
 }
 
 .feedback-result {
-  font-size: 20px;
+  font-size: var(--text-20);
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .feedback-correct {
-  font-size: 31px;
-  margin-bottom: 16px;
+  font-family: var(--font-serif);
+  font-size: var(--text-31);
+  margin-bottom: var(--space-4);
 }
 
 .feedback-hint {
-  font-size: 14px;
-  margin-bottom: 16px;
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  margin-bottom: var(--space-4);
 }
 
-/* --- Summary --- */
+/* ── Summary ───────────────────────────────────────────── */
 .summary {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: var(--space-8);
 }
 
 .summary-ripple {
@@ -290,7 +314,7 @@ body {
 
 .summary-stats {
   display: flex;
-  gap: 32px;
+  gap: var(--space-8);
 }
 
 .stat {
@@ -300,13 +324,157 @@ body {
 }
 
 .stat-value {
-  font-size: 31px;
+  font-size: var(--text-31);
   font-family: var(--font-serif);
   color: var(--color-ink);
 }
 
 .stat-label {
-  font-size: 14px;
-  color: var(--neutral-400);
-  margin-top: 4px;
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  margin-top: var(--space-1);
+}
+
+/* ── Reduced-motion utility class (in-app toggle) ────────
+   Applied via a <body class="reduced-motion"> when the user
+   enables the in-app toggle in Settings.                    */
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Settings screen ─────────────────────────────────── */
+.settings {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.settings-back {
+  border: none;
+  background: transparent;
+  color: var(--color-accent-text);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  transition: opacity var(--motion-fast) var(--ease);
+}
+
+.settings-back:hover {
+  opacity: 0.7;
+}
+
+.settings-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-25);
+  color: var(--color-ink);
+}
+
+.settings-about p {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  line-height: 1.6;
+}
+
+.settings-about p strong {
+  color: var(--color-ink);
+}
+
+.settings-attribution {
+  font-size: var(--text-14);
+  line-height: 1.6;
+  color: var(--color-neutral-4);
+}
+
+.settings-attribution h1 {
+  font-family: var(--font-serif);
+  font-size: var(--text-20);
+  color: var(--color-ink);
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+.settings-attribution h2 {
+  font-size: var(--text-16);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.settings-attribution h3 {
+  font-size: var(--text-14);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.settings-attribution table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-3) 0;
+  font-size: var(--text-12);
+}
+
+.settings-attribution th,
+.settings-attribution td {
+  text-align: left;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-neutral-1);
+}
+
+.settings-attribution th {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.settings-attribution blockquote {
+  border-left: 3px solid var(--color-neutral-2);
+  padding-left: var(--space-3);
+  margin: var(--space-3) 0;
+  font-style: italic;
+}
+
+.settings-attribution code {
+  font-size: var(--text-12);
+  background: var(--color-neutral-1);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.settings-attribution a {
+  color: var(--color-accent-text);
+}
+
+.settings-attribution ul {
+  padding-left: var(--space-5);
+  margin: var(--space-2) 0;
+}
+
+.settings-attribution li {
+  margin-bottom: var(--space-1);
+}
+
+.settings-attribution hr {
+  border: none;
+  border-top: 1px solid var(--color-neutral-1);
+  margin: var(--space-4) 0;
+}
+
+.settings-attribution p {
+  margin-bottom: var(--space-2);
+}
+
+.settings-attribution strong {
+  color: var(--color-ink);
 }

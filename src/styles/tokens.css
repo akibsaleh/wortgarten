@@ -1,0 +1,83 @@
+/* ==========================================================
+   tokens.css — single source of truth for all design tokens
+   Spec: PLAN.md §4, docs/04-design-assets.md §1
+   ========================================================== */
+
+:root {
+  /* ── Palette ─────────────────────────────────────────── */
+  --color-paper:       #FBFAF7;          /* warm off-white, never pure white          */
+  --color-ink:         #23282D;          /* primary text, 14.2:1 on paper            */
+  --color-accent:      #3F7D5D;          /* moss green — only accent                 */
+  --color-accent-text: #2E5E46;          /* accent-as-text on paper, 7.2:1           */
+  --color-success:     #3F7D5D;          /* success = accent                         */
+  --color-error:       #B3563B;          /* muted terracotta, never neon red          */
+
+  /* Gender colors (≥4.5:1 on paper) */
+  --color-der:         #3B6EA5;          /* soft blue  — masculine                   */
+  --color-die:         #9E4B63;          /* muted rose — feminine                    */
+  --color-das:         #8A6D1F;          /* warm sand  — neuter                      */
+
+  /* 4 warm-gray neutrals */
+  --color-neutral-1:   #E8E6E1;          /* lightest — subtle dividers                */
+  --color-neutral-2:   #D1CFC9;          /* borders, input outlines                  */
+  --color-neutral-3:   #B5B3AD;          /* secondary text, hints                    */
+  --color-neutral-4:   #9A9892;          /* disabled text, metadata                  */
+
+  /* ── Typography ──────────────────────────────────────── */
+  --font-serif: 'Source Serif 4', 'Newsreader', Georgia, serif;
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Modular scale 1.25 */
+  --text-12: 12px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-20: 20px;
+  --text-25: 25px;
+  --text-31: 31px;
+  --text-39: 39px;
+
+  /* ── Spacing (4 px grid) ────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  28px;
+  --space-8:  32px;
+  --space-9:  36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+  --space-13: 52px;
+  --space-14: 56px;
+  --space-15: 60px;
+  --space-16: 64px;
+
+  /* ── Shape ───────────────────────────────────────────── */
+  --radius-card:  12px;                 /* cards, chips                            */
+  --radius-lg:    16px;                 /* sheets, large surfaces                  */
+  --border-soft:  1px solid var(--color-neutral-2);
+  --layout-max:   640px;
+
+  /* ── Motion ──────────────────────────────────────────── */
+  --motion-fast:  120ms;                /* hovers, chip appearance                 */
+  --motion-med:   180ms;                /* standard transitions                    */
+  --motion-slow:  250ms;                /* progress-ring fill, max UI transition   */
+  --motion-flip:  280ms;                /* card flip (explicit PLAN §4 exception)  */
+  --ease:         ease-out;
+}
+
+/* ── Reduced motion ───────────────────────────────────────
+   All animation collapses to instant opacity crossfade.
+   OS-level preference + in-app toggle (§4 screen 7). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

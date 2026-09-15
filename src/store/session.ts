@@ -1,6 +1,11 @@
 /**
  * Zustand store for session UI state. SRS state lives in Dexie (IndexedDB),
  * not in memory — this store holds ephemeral session state only.
+ *
+ * P2-T3: The queue carries SessionCard.cardType ('production' | 'recognition' |
+ * 'cloze' | 'audio') and optional clozeText. The current card's interaction
+ * type is accessed via queue[currentIndex].cardType — no separate state field
+ * needed since it changes only when currentIndex advances (handled by nextCard).
  */
 import { create } from 'zustand';
 import type { SessionCard } from '../session/compose';
