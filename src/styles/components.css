@@ -1,0 +1,563 @@
+/* ==========================================================
+   components.css — the reusable vocabulary: buttons, card,
+   ribbon, input, feedback, chips, badges, banner.
+   ========================================================== */
+
+/* ── Buttons ───────────────────────────────────────────── */
+.btn-primary {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-accent);
+  color: var(--color-paper);
+  border: none;
+  border-radius: var(--radius-card);
+  font-size: var(--text-16);
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity var(--motion-fast) var(--ease);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-submit {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-accent);
+  color: var(--color-paper);
+  border: none;
+  border-radius: var(--radius-card);
+  font-size: var(--text-14);
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity var(--motion-fast) var(--ease);
+}
+
+.btn-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Text / link buttons ─────────────────────────────── */
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--color-accent-text);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-accent-text);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  padding: var(--space-2) 0;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  color: var(--color-accent-text);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  transition: opacity var(--motion-fast) var(--ease);
+}
+
+.btn-back:hover {
+  opacity: 0.7;
+}
+
+
+/* ── Badges ────────────────────────────────────────────── */
+.badge-new {
+  font-size: var(--text-12);
+  color: var(--color-accent-text);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--space-1);
+  padding: 1px var(--space-2);
+}
+
+/* ── Card ──────────────────────────────────────────────────
+   Single source of truth. Previously declared twice in
+   base.css (:261 and :590); the later block silently won and
+   its rotateY(0deg) made the flip a no-op. Merged here.
+   `perspective` must sit on this OUTER element — preserve-3d
+   on the rotating element alone renders flat, which is
+   exactly why the original flip did nothing.                */
+.card {
+  width: 100%;
+  max-width: 480px;
+  min-height: 280px;
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-paper);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  transition: box-shadow var(--motion-med) var(--ease);
+  perspective: 1000px;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.card--flipped {
+  cursor: default;
+}
+
+/* ── Card flip ─────────────────────────────────────────────
+   Two persistent faces rotating 280ms per PLAN §4 / spec §7.1.
+   Reduced motion collapses the duration via the global guards
+   in motion.css, giving spec §7.1's crossfade.               */
+.card-inner {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  transform-style: preserve-3d;
+  transition: transform var(--motion-flip) var(--ease);
+}
+
+.card--flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.card-gloss {
+  font-size: var(--text-25);
+  color: var(--color-ink);
+}
+
+.card-hint {
+  font-size: var(--text-14);
+  color: var(--color-neutral-3);
+  margin-top: var(--space-4);
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* ── Gender ribbon ─────────────────────────────────────── */
+.gender-ribbon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--space-1);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.card-word {
+  font-family: var(--font-serif);
+  font-size: var(--text-39);
+  color: var(--color-ink);
+  margin-bottom: var(--space-2);
+}
+
+.card-article {
+  font-weight: 400;
+}
+
+.card-plural {
+  font-size: var(--text-16);
+  color: var(--color-neutral-4);
+  margin-bottom: var(--space-3);
+}
+
+.card-example {
+  font-size: var(--text-16);
+  color: var(--color-neutral-3);
+  font-style: italic;
+}
+
+/* ── Input ─────────────────────────────────────────────── */
+.session-input {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 480px;
+}
+
+.text-input {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--radius-card);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color var(--motion-fast) var(--ease);
+}
+
+.text-input:focus {
+  border-color: var(--color-accent);
+}
+
+/* ── Feedback ──────────────────────────────────────────── */
+.feedback {
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+}
+
+.feedback--correct .feedback-result {
+  color: var(--color-success);
+}
+
+.feedback--wrong .feedback-result,
+.feedback--typo .feedback-result {
+  color: var(--color-error);
+}
+
+.feedback-result {
+  font-size: var(--text-20);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+
+.feedback-correct {
+  font-family: var(--font-serif);
+  font-size: var(--text-31);
+  margin-bottom: var(--space-4);
+}
+
+.feedback-hint {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  margin-bottom: var(--space-4);
+}
+
+
+/* ── Pronunciation button ────────────────────────────────── */
+.btn-pronounce {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: var(--touch-min);
+  height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-neutral-3);
+  transition: color var(--motion-fast) var(--ease),
+              background var(--motion-fast) var(--ease);
+  z-index: var(--z-raised);
+}
+
+.btn-pronounce:hover {
+  color: var(--color-accent);
+  background: var(--color-neutral-1);
+}
+
+/* Radial accent ripple on press (spec §7.2). Suppressed
+   entirely under reduced motion — see motion.css.           */
+.btn-pronounce::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn-pronounce:active::after {
+  animation: pressRipple var(--motion-slow) var(--ease);
+}
+
+/* ── Umlaut helper chips ─────────────────────────────────── */
+.umlaut-chips {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  justify-content: center;
+}
+
+.umlaut-chip {
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--radius-card);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
+}
+
+.umlaut-chip:hover {
+  background: var(--color-neutral-1);
+  border-color: var(--color-accent);
+}
+
+.umlaut-chip:active {
+  transform: scale(0.95);
+}
+
+/* ── Session input wrapper (input + umlaut chips) ────────── */
+.session-input-wrapper {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Word detail mini-view ───────────────────────────────── */
+.word-detail-mini {
+  width: 100%;
+  max-width: 480px;
+  border: var(--border-soft);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  background: var(--color-paper);
+  animation: fadeSlideIn var(--motion-med) var(--ease);
+}
+
+.word-detail-row {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-neutral-1);
+  font-size: var(--text-14);
+}
+
+.word-detail-row:last-of-type {
+  border-bottom: none;
+}
+
+.word-detail-label {
+  min-width: 70px;
+  font-weight: 500;
+  color: var(--color-neutral-4);
+  flex-shrink: 0;
+}
+
+.word-detail-value {
+  color: var(--color-ink);
+}
+
+.word-detail-example {
+  line-height: 1.6;
+}
+
+.word-detail-coming-soon {
+  font-size: var(--text-12);
+  color: var(--color-neutral-4);
+  text-align: center;
+  margin-top: var(--space-2);
+  font-style: italic;
+}
+
+/* ── Word detail info button on card back ────────────────── */
+.btn-word-detail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-neutral-2);
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: var(--text-14);
+  color: var(--color-neutral-3);
+  transition: color var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease);
+}
+
+.btn-word-detail:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* ── Skip button ─────────────────────────────────────────── */
+.btn-skip {
+  display: block;
+  width: 100%;
+  max-width: 160px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-6);
+  background: transparent;
+  color: var(--color-neutral-4);
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--radius-card);
+  font-size: var(--text-14);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease);
+}
+
+.btn-skip:hover {
+  color: var(--color-ink);
+  border-color: var(--color-neutral-3);
+}
+
+
+/* ── Install banner (P3-T2) ─────────────────────────────────
+   Calm, non-intrusive banner at the bottom of the Home screen.
+   Fades in gently; respects prefers-reduced-motion via the global rule. */
+.install-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-paper);
+  border-top: 1px solid var(--color-neutral-2);
+  z-index: var(--z-banner);
+  animation: fadeSlideIn var(--motion-slow) var(--ease);
+}
+
+.install-banner-text {
+  font-size: var(--text-14);
+  color: var(--color-neutral-3);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.install-banner-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.install-banner-btn {
+  font-size: var(--text-14);
+  padding: var(--space-2) var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .install-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-3);
+  }
+}
+
+/* ── Replay button (audio cards) ───────────────────────── */
+.btn-replay {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--radius-card);
+  color: var(--color-neutral-3);
+  font-size: var(--text-14);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease);
+}
+
+.btn-replay:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* ── Icons ─────────────────────────────────────────────────
+   Inline SVG replaces emoji on controls: emoji are
+   font-dependent, vary per OS, and cannot be token-tinted.  */
+.icon-speaker {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  flex-shrink: 0;
+}
+
+.btn-replay .icon-speaker,
+.btn-word-detail .icon-speaker {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
+/* ── Progress ring (spec §7.3) ─────────────────────────────
+   Fill animates in CSS, not a rAF loop driving React state.
+   A `from`-only keyframe runs to the element's own computed
+   offset, so each ring grows from empty to its own value on
+   mount — a plain transition would not fire at all, since
+   nothing changes after the first paint. Reduced motion is
+   handled by the global guards in motion.css.               */
+/* viewBox on the SVG lets width scale it; without one, a CSS
+   width crops instead of scaling.                           */
+.progress-ring {
+  display: block;
+}
+
+.ring-fill {
+  animation: ringFill var(--motion-slow) var(--ease);
+  transition: stroke-dashoffset var(--motion-slow) var(--ease);
+}
+
+.ring-text {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fixed banner must not cover the last interactive element
+   on Home (skill rule `fixed-element-offset`).              */
+body:has(.install-banner) .home {
+  padding-bottom: var(--space-16);
+}

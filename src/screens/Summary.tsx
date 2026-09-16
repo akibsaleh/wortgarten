@@ -42,7 +42,11 @@ export function Summary() {
 
   return (
     <main className="summary" id="main-content">
-      <div className="summary-ripple" aria-hidden="true" />
+      <div className="summary-ripple" aria-hidden="true">
+        <span className="ripple-ring" />
+        <span className="ripple-ring" />
+        <span className="ripple-ring" />
+      </div>
       <h2 className="summary-title">
         Session complete
       </h2>

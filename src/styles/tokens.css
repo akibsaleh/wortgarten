@@ -68,16 +68,24 @@
   --ease:         ease-out;
 }
 
-/* ── Reduced motion ───────────────────────────────────────
-   All animation collapses to instant opacity crossfade.
-   OS-level preference + in-app toggle (§4 screen 7). */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* ── Ambient motion ───────────────────────────────────────
+   NOT part of the four-token UI motion scale above. Spec
+   §7.5 calls the summary ripple "ambient, not a UI
+   transition token". Do not reuse for UI transitions.      */
+:root {
+  --motion-ambient: 2400ms;             /* session-summary ripple loop (§7.5)      */
+
+  /* ── Icon & ring sizing ────────────────────────────────── */
+  --ring-stroke:  3px;                  /* thin progress rings (§7.3)              */
+  --icon-sm:      16px;
+  --icon-md:      24px;
+  --touch-min:    44px;                 /* WCAG 2.2 SC 2.5.8 target minimum        */
+
+  /* ── Z-index scale ─────────────────────────────────────────
+     Resolves the .skip-nav / .install-banner collision where
+     both sat at 100 and DOM order decided the winner.        */
+  --z-base:       0;
+  --z-raised:     10;
+  --z-banner:     40;
+  --z-skipnav:    100;
 }

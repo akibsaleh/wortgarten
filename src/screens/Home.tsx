@@ -57,7 +57,7 @@ export function Home() {
   if (loading) {
     return (
       <main className="home" id="main-content">
-        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
+        <p className="loading-text">Loading…</p>
       </main>
     );
   }
@@ -89,9 +89,8 @@ export function Home() {
           5 minutes rebuilds your streak
           <button
             onClick={handleRepair}
-            className="btn-text"
+            className="btn-text streak-repair-btn"
             aria-label="Rebuild streak"
-            style={{ marginLeft: '8px' }}
           >
             Rebuild
           </button>

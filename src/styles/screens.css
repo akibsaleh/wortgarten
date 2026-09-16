@@ -1,0 +1,850 @@
+/* ==========================================================
+   screens.css — per-screen layout. One section per route.
+   ========================================================== */
+
+/* ── Streak display ──────────────────────────────────── */
+.streak-count {
+  font-size: var(--text-16);
+  color: var(--color-ink);
+}
+
+.streak-freeze-note {
+  font-size: var(--text-14);
+  color: var(--color-neutral-3);
+}
+
+.streak-repair-nudge {
+  font-size: var(--text-14);
+  color: var(--color-neutral-3);
+  display: flex;
+  align-items: center;
+}
+
+.streak-summary {
+  font-size: var(--text-16);
+  color: var(--color-ink);
+}
+
+
+/* ── Home ──────────────────────────────────────────────── */
+.home {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.home-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-39);
+  color: var(--color-ink);
+}
+
+.home-subtitle {
+  font-size: var(--text-16);
+  color: var(--color-neutral-4);
+  margin-bottom: var(--space-12);
+}
+
+.home-settings-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-neutral-4);
+  transition: color var(--motion-fast) var(--ease);
+}
+
+.home-settings-link:hover {
+  color: var(--color-ink);
+}
+
+.home-settings-link svg {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  fill: currentColor;
+}
+
+
+/* ── Session ───────────────────────────────────────────── */
+.session {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.session-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+
+/* ── Summary ───────────────────────────────────────────── */
+.summary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+}
+
+/* Still-water motif (spec §7.5): three concentric thin rings
+   expanding on an ambient loop. Was a single static circle at
+   opacity 0.3 — named "ripple" but never animated.           */
+.summary-ripple {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.ripple-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: rippleExpand var(--motion-ambient) var(--ease) infinite;
+}
+
+.ripple-ring:nth-child(2) {
+  animation-delay: calc(var(--motion-ambient) / 3);
+}
+
+.ripple-ring:nth-child(3) {
+  animation-delay: calc(var(--motion-ambient) / 3 * 2);
+}
+
+.summary-stats {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: var(--text-31);
+  font-family: var(--font-serif);
+  color: var(--color-ink);
+}
+
+.stat-label {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  margin-top: var(--space-1);
+}
+
+.summary-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-25);
+  color: var(--color-ink);
+}
+
+/* ── Settings screen ─────────────────────────────────── */
+.settings {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.settings-back {
+  border: none;
+  background: transparent;
+  color: var(--color-accent-text);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  transition: opacity var(--motion-fast) var(--ease);
+}
+
+.settings-back:hover {
+  opacity: 0.7;
+}
+
+.settings-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-25);
+  color: var(--color-ink);
+}
+
+.settings-about p {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  line-height: 1.6;
+}
+
+.settings-about p strong {
+  color: var(--color-ink);
+}
+
+.settings-attribution {
+  font-size: var(--text-14);
+  line-height: 1.6;
+  color: var(--color-neutral-4);
+}
+
+.settings-attribution h1 {
+  font-family: var(--font-serif);
+  font-size: var(--text-20);
+  color: var(--color-ink);
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+.settings-attribution h2 {
+  font-size: var(--text-16);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.settings-attribution h3 {
+  font-size: var(--text-14);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.settings-attribution table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-3) 0;
+  font-size: var(--text-12);
+}
+
+.settings-attribution th,
+.settings-attribution td {
+  text-align: left;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-neutral-1);
+}
+
+.settings-attribution th {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.settings-attribution blockquote {
+  border-left: 3px solid var(--color-neutral-2);
+  padding-left: var(--space-3);
+  margin: var(--space-3) 0;
+  font-style: italic;
+}
+
+.settings-attribution code {
+  font-size: var(--text-12);
+  background: var(--color-neutral-1);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.settings-attribution a {
+  color: var(--color-accent-text);
+}
+
+.settings-attribution ul {
+  padding-left: var(--space-5);
+  margin: var(--space-2) 0;
+}
+
+.settings-attribution li {
+  margin-bottom: var(--space-1);
+}
+
+.settings-attribution hr {
+  border: none;
+  border-top: 1px solid var(--color-neutral-1);
+  margin: var(--space-4) 0;
+}
+
+.settings-attribution p {
+  margin-bottom: var(--space-2);
+}
+
+.settings-attribution strong {
+  color: var(--color-ink);
+}
+
+
+/* ── Onboarding screen ───────────────────────────────────── */
+.onboarding {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-4);
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.onboarding-dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: 50%;
+  background: var(--color-neutral-2);
+  transition: background var(--motion-med) var(--ease);
+}
+
+.onboarding-dot--active {
+  background: var(--color-accent);
+}
+
+.onboarding-dot--done {
+  background: var(--color-accent);
+  opacity: 0.5;
+}
+
+.onboarding-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 480px;
+}
+
+.onboarding-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-25);
+  color: var(--color-ink);
+  text-align: center;
+}
+
+.onboarding-subtitle {
+  font-size: var(--text-16);
+  color: var(--color-neutral-4);
+  text-align: center;
+  max-width: 360px;
+}
+
+/* Goal picker */
+.onboarding-goals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.onboarding-goal {
+  min-width: 72px;
+  min-height: var(--touch-min);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-neutral-2);
+  border-radius: var(--radius-card);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease),
+              color var(--motion-fast) var(--ease);
+}
+
+.onboarding-goal:hover {
+  border-color: var(--color-accent);
+}
+
+.onboarding-goal--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-paper);
+}
+
+/* Audio play button */
+.onboarding-play-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-8);
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-accent);
+  font-size: var(--text-16);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
+}
+
+.onboarding-play-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-paper);
+}
+
+.onboarding-play-btn:active {
+  transform: scale(0.96);
+}
+
+.onboarding-play-icon {
+  display: flex;
+}
+
+.onboarding-play-icon .icon-speaker {
+  width: var(--space-7);
+  height: var(--space-7);
+}
+
+.onboarding-confirm-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  animation: fadeSlideIn var(--motion-med) var(--ease);
+}
+
+.onboarding-confirm-text {
+  font-size: var(--text-16);
+  color: var(--color-neutral-4);
+}
+
+.onboarding-confirm-buttons {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.onboarding-hint {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  text-align: center;
+  max-width: 320px;
+  font-style: italic;
+}
+
+/* Navigation */
+.onboarding-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  margin-top: var(--space-6);
+}
+
+
+/* ── Dashboard ─────────────────────────────────────────────
+   Previously had NO styles at all — all 12 of its classes
+   were orphaned, so rings stacked and the CEFR bars rendered
+   at zero height. Spec §7.3 (thin rings).                   */
+.dashboard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.dashboard-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-31);
+  color: var(--color-ink);
+}
+
+.dashboard-rings {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.ring-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ring-label {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  text-align: center;
+}
+
+.dashboard-honest-copy {
+  font-size: var(--text-16);
+  line-height: 1.6;
+  color: var(--color-neutral-3);
+  text-align: center;
+}
+
+.dashboard-honest-copy strong {
+  color: var(--color-ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-registers {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Dashboard: CEFR band breakdown ────────────────────── */
+.dashboard-bands {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dashboard-bands-title {
+  font-size: var(--text-16);
+  color: var(--color-ink);
+  margin-bottom: var(--space-3);
+}
+
+.band-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.band-label {
+  font-size: var(--text-14);
+  font-weight: 600;
+  color: var(--color-neutral-4);
+  min-width: var(--space-6);
+}
+
+/* Explicit height required: a child at height:100% inside an
+   auto-height parent collapses to zero — the original bug.  */
+.band-bar-track {
+  height: var(--space-2);
+  background: var(--color-neutral-1);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+/* scaleX, not width — animating width forces layout every
+   frame. Transform is compositor-driven.                    */
+.band-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--color-accent);
+  border-radius: inherit;
+  transform-origin: left center;
+  transition: transform var(--motion-slow) var(--ease);
+}
+
+.band-count {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  font-variant-numeric: tabular-nums;
+  min-width: var(--space-8);
+  text-align: right;
+}
+
+/* ── Welcome back (lapsed-user reboot) ─────────────────────
+   Applied alongside .home (className="home welcome-back"),
+   so it only carries the deltas from the Home layout.       */
+.welcome-back {
+  gap: var(--space-5);
+}
+
+.welcome-back-message {
+  font-size: var(--text-20);
+  font-family: var(--font-serif);
+  color: var(--color-ink);
+  text-align: center;
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+.streak-day-one {
+  font-size: var(--text-16);
+  color: var(--color-neutral-3);
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.welcome-back-hint {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  text-align: center;
+}
+
+/* ── Session: progress meta ────────────────────────────── */
+.session-progress-text {
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.badge-type {
+  font-size: var(--text-12);
+  color: var(--color-neutral-4);
+  margin-left: var(--space-2);
+}
+
+/* ── Shared: loading placeholder ───────────────────────── */
+.loading-text {
+  color: var(--color-neutral-3);
+}
+
+/* ── Settings: groups & controls ───────────────────────────
+   Converted from inline style objects. Off-scale literals
+   (13px, 28px, 10px, radius 8/6) snapped to the token grid. */
+.settings-group {
+  margin-bottom: var(--space-7);
+}
+
+.settings-group-label {
+  font-size: var(--text-14);
+  font-weight: 600;
+  color: var(--color-neutral-4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+/* Segmented control */
+.settings-segmented {
+  display: flex;
+  gap: var(--space-1);
+  background: var(--color-neutral-1);
+  border-radius: var(--radius-card);
+  padding: var(--space-1);
+}
+
+.settings-segment {
+  flex: 1;
+  min-height: var(--touch-min);
+  padding: var(--space-2) 0;
+  border: none;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  font-size: var(--text-14);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  background: transparent;
+  color: var(--color-neutral-4);
+  transition: background var(--motion-fast) var(--ease),
+              color var(--motion-fast) var(--ease);
+}
+
+/* Soft border, not a shadow (spec §1.3: soft borders instead
+   of heavy shadows). Was pure white + an rgba shadow.       */
+.settings-segment--active {
+  background: var(--color-paper);
+  border: var(--border-soft);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.settings-row-label {
+  font-size: var(--text-14);
+  color: var(--color-ink);
+}
+
+.settings-field {
+  margin-bottom: var(--space-3);
+}
+
+.settings-field-label {
+  display: block;
+  font-size: var(--text-14);
+  color: var(--color-neutral-4);
+  margin-bottom: var(--space-1);
+}
+
+.settings-field-input {
+  font-size: var(--text-14);
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-min);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-neutral-2);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.settings-note {
+  font-size: var(--text-12);
+  color: var(--color-neutral-4);
+  margin: 0;
+}
+
+/* Toggle switch. The enabled state previously referenced
+   var(--color-primary), which is not a defined token — the
+   switch had no fill when on. Uses the accent now.          */
+.settings-toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--space-11);
+  height: var(--space-6);
+  border-radius: var(--space-6);
+  border: none;
+  cursor: pointer;
+  background: var(--color-neutral-2);
+  transition: background var(--motion-fast) var(--ease);
+}
+
+.settings-toggle--on {
+  background: var(--color-accent);
+}
+
+.settings-toggle-knob {
+  position: absolute;
+  top: var(--space-1);
+  left: var(--space-1);
+  width: var(--space-4);
+  height: var(--space-4);
+  border-radius: 50%;
+  background: var(--color-paper);
+  border: var(--border-soft);
+  transition: transform var(--motion-fast) var(--ease);
+}
+
+/* translate, not `left` — avoids per-frame layout. */
+.settings-toggle--on .settings-toggle-knob {
+  transform: translateX(var(--space-5));
+}
+
+.settings-export-btn {
+  max-width: 280px;
+}
+
+/* ── Home: streak repair inline action ─────────────────── */
+.streak-repair-btn {
+  margin-left: var(--space-2);
+}
+
+/* ── Onboarding: layout deltas ─────────────────────────── */
+.onboarding-input-row {
+  margin-top: var(--space-4);
+}
+
+.onboarding-feedback-hint {
+  margin-bottom: var(--space-4);
+}
+
+.onboarding-confirm-btn {
+  max-width: 140px;
+}
+
+.onboarding-skip-btn {
+  max-width: 160px;
+}
+
+/* ── Responsive ────────────────────────────────────────────
+   Breakpoints 480 / 768 / 1024 (480 is the pre-existing one
+   from the install banner — kept rather than adding a
+   parallel set). The column never widens past --layout-max:
+   spec §1.3 mandates a single centred column.               */
+@media (max-width: 480px) {
+  /* Keep the three rings on one row rather than wrapping 2+1:
+     the SVG carries a viewBox, so width scales it properly.  */
+  .dashboard-rings {
+    gap: var(--space-2);
+    flex-wrap: nowrap;
+  }
+
+  .progress-ring {
+    width: 100%;
+    height: auto;
+    max-width: 96px;
+  }
+
+  .ring-item {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ring-label {
+    font-size: var(--text-12);
+  }
+
+  /* Long German compounds must reflow, never overflow. */
+  .card-word,
+  .feedback-correct {
+    font-size: var(--text-31);
+    overflow-wrap: anywhere;
+  }
+
+  .card {
+    min-height: 240px;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .home-title {
+    font-size: var(--text-31);
+  }
+
+  .summary-stats {
+    gap: var(--space-5);
+  }
+
+  .summary-ripple {
+    width: 120px;
+    height: 120px;
+  }
+
+  .onboarding {
+    gap: var(--space-4);
+  }
+}
+
+@media (min-width: 768px) {
+  .home,
+  .dashboard,
+  .summary {
+    gap: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .home,
+  .dashboard,
+  .summary {
+    gap: var(--space-8);
+  }
+}

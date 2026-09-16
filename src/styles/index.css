@@ -1,0 +1,10 @@
+/* ==========================================================
+   index.css — stylesheet manifest. Cascade order is
+   load-bearing: tokens → reset → components → screens → motion.
+   This is the only stylesheet main.tsx imports.
+   ========================================================== */
+@import './tokens.css';
+@import './reset.css';
+@import './components.css';
+@import './screens.css';
+@import './motion.css';

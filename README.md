@@ -50,7 +50,7 @@ docker compose down
 
 **PWA & offline**
 - Service worker via Workbox — entire learning loop works offline after first load
-- 4,009 precached entries (app shell + all audio)
+- 4,013 precached entries (app shell + all audio + self-hosted fonts)
 - Install prompt after 3 completed sessions, dismissible, never re-nags
 - Manifest with app icons for home screen installation
 
@@ -120,7 +120,9 @@ src/
   session/        # Session composition (due reviews + new words)
   store/          # Zustand state management
   streaks/        # StreakManager (freeze, repair, increment)
-  styles/         # Design tokens (tokens.css), base styles (base.css)
+  styles/         # tokens.css (design tokens), reset.css, components.css,
+                  # screens.css, motion.css — imported in that cascade
+                  # order by index.css
 scripts/          # parse-words.mjs, validate-words.mjs, generate-audio.sh, smoke-test.sh
 e2e/              # Playwright offline E2E tests
 tests/            # Vitest unit tests
@@ -138,6 +140,7 @@ tests/            # Vitest unit tests
 | State | Zustand (UI) + Dexie (persistence) |
 | Routing | React Router |
 | Audio | Piper TTS (OGG) + Web Speech API fallback |
+| Fonts | Inter + Source Serif 4, self-hosted woff2 (precached — no runtime CDN request) |
 | Tests | Vitest + Testing Library, Playwright for E2E |
 | Deploy | Docker (Node → nginx) |
 

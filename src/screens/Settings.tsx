@@ -141,11 +141,8 @@ These 1,000 words represent the highest-utility core vocabulary for English-spea
 function SettingGroup({ label, children }: { label: string; children: React.ReactNode }) {
   const groupId = `setting-${label.toLowerCase().replace(/\s+/g, '-')}`;
   return (
-    <div style={{ marginBottom: 28 }}>
-      <h3
-        id={groupId}
-        style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-neutral-4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}
-      >
+    <div className="settings-group">
+      <h3 id={groupId} className="settings-group-label">
         {label}
       </h3>
       <div aria-labelledby={groupId}>
@@ -167,26 +164,14 @@ function SegmentedControl<T extends string | number>({
   labels?: Record<T, string>;
 }) {
   return (
-    <div style={{ display: 'flex', gap: 4, background: 'var(--color-neutral-1)', borderRadius: 8, padding: 3 }} role="radiogroup">
+    <div className="settings-segmented" role="radiogroup">
       {options.map((opt) => (
         <button
           key={opt}
           role="radio"
           aria-checked={value === opt}
           onClick={() => onChange(opt)}
-          style={{
-            flex: 1,
-            padding: '8px 0',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontSize: 14,
-            fontWeight: value === opt ? 600 : 400,
-            background: value === opt ? '#fff' : 'transparent',
-            color: value === opt ? 'var(--color-ink)' : 'var(--color-neutral-4)',
-            boxShadow: value === opt ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-            transition: 'all var(--motion-fast)',
-          }}
+          className={`settings-segment ${value === opt ? 'settings-segment--active' : ''}`}
         >
           {labels ? labels[opt] : opt}
         </button>
@@ -243,7 +228,7 @@ export function Settings() {
   if (!settings) {
     return (
       <main className="settings" id="main-content">
-        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
+        <p className="loading-text">Loading…</p>
       </main>
     );
   }
@@ -305,64 +290,38 @@ export function Settings() {
       {/* Notifications — only shown if the platform supports the Notification API */}
       {notif.isSupported && (
         <SettingGroup label="Reminders">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, color: 'var(--color-ink)' }}>Daily reminder</span>
+          <div className="settings-row">
+            <span className="settings-row-label">Daily reminder</span>
             <button
               role="switch"
               aria-checked={notif.enabled}
               onClick={notif.toggleEnabled}
-              style={{
-                width: 44,
-                height: 24,
-                borderRadius: 12,
-                border: 'none',
-                cursor: 'pointer',
-                background: notif.enabled ? 'var(--color-primary)' : 'var(--color-neutral-2)',
-                position: 'relative',
-                transition: 'background var(--motion-fast)',
-              }}
+              aria-label="Daily reminder"
+              className={`settings-toggle ${notif.enabled ? 'settings-toggle--on' : ''}`}
             >
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 2,
-                  left: notif.enabled ? 22 : 2,
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  background: '#fff',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                  transition: 'left var(--motion-fast)',
-                }}
-              />
+              <span className="settings-toggle-knob" aria-hidden="true" />
             </button>
           </div>
 
           {notif.enabled && (
             <>
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ fontSize: 13, color: 'var(--color-neutral-4)', marginBottom: 4, display: 'block' }}>
+              <div className="settings-field">
+                <label className="settings-field-label" htmlFor="reminder-time">
                   Reminder time
                 </label>
                 <input
+                  id="reminder-time"
                   type="time"
+                  className="settings-field-input"
                   value={notif.reminderTime}
                   onChange={(e) => notif.setReminderTime(e.target.value)}
-                  style={{
-                    fontSize: 14,
-                    padding: '6px 10px',
-                    borderRadius: 6,
-                    border: '1px solid var(--color-neutral-2)',
-                    background: '#fff',
-                    color: 'var(--color-ink)',
-                  }}
                 />
               </div>
             </>
           )}
 
           {/* Permission status */}
-          <p style={{ fontSize: 12, color: 'var(--color-neutral-4)', margin: 0 }}>
+          <p className="settings-note">
             {notif.permission === 'granted' && '✓ Notification permission granted'}
             {notif.permission === 'denied' && '✕ Notification permission denied — enable in browser settings'}
             {notif.permission === 'default' && 'Notification permission not yet requested'}
@@ -374,10 +333,9 @@ export function Settings() {
       {/* Data export */}
       <SettingGroup label="Data">
         <button
-          className="btn-primary"
+          className="btn-primary settings-export-btn"
           onClick={handleExport}
           disabled={exporting}
-          style={{ maxWidth: 280 }}
         >
           {exporting ? 'Exporting…' : 'Export all data (JSON)'}
         </button>

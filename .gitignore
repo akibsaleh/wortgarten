@@ -7,3 +7,5 @@ scripts/curation/
 scripts/.venv/
 .env
 .env.*
+test-results/
+playwright-report/
