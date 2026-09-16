@@ -1,7 +1,13 @@
 import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/session';
-import { grade, gradeRecognition, gradeToRating, paceFromMs } from '../scheduler/grading';
+import { SpeakerIcon } from '../components/SpeakerIcon';
+import {
+  grade,
+  gradeRecognition,
+  gradeToRating,
+  paceFromMs,
+} from '../scheduler/grading';
 import { rateCard } from '../scheduler/index';
 import { Rating } from 'ts-fsrs';
 import { useAudio } from '../audio/useAudio';
@@ -12,8 +18,16 @@ const UMLAUTS = ['ä', 'ö', 'ü', 'ß'] as const;
 export function Session() {
   const navigate = useNavigate();
   const {
-    queue, currentIndex, flipped, answer, grading, correctForm,
-    flip, setAnswer, submitAnswer, nextCard,
+    queue,
+    currentIndex,
+    flipped,
+    answer,
+    grading,
+    correctForm,
+    flip,
+    setAnswer,
+    submitAnswer,
+    nextCard,
   } = useSessionStore();
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,6 +35,8 @@ export function Session() {
   const flipTimeRef = useRef<number>(0);
   const answerTimeRef = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const frontFaceRef = useRef<HTMLDivElement>(null);
+  const backFaceRef = useRef<HTMLDivElement>(null);
   const [showWordDetail, setShowWordDetail] = useState(false);
   const [announceText, setAnnounceText] = useState('');
 
@@ -28,6 +44,15 @@ export function Session() {
 
   const current = queue[currentIndex];
   const cardType = current?.cardType ?? 'production';
+
+  // Both card faces stay mounted for the flip, so the face turned away
+  // must be inert: backface-visibility hides pixels but leaves the
+  // subtree in the tab order and the accessibility tree. Set via ref —
+  // React 18 does not accept `inert` as a JSX prop.
+  useEffect(() => {
+    if (frontFaceRef.current) frontFaceRef.current.inert = flipped;
+    if (backFaceRef.current) backFaceRef.current.inert = !flipped;
+  }, [flipped]);
 
   // Auto-focus input when flipped
   useEffect(() => {
@@ -151,67 +176,75 @@ export function Session() {
     });
   }
 
-  if (!current) {
-    return (
-      <main className="session" id="main-content">
-        <p>No cards in session.</p>
-        <button onClick={() => navigate('/')} aria-label="Go home">Go home</button>
-      </main>
-    );
-  }
-
-  const { word } = current;
-  const progress = `${currentIndex + 1} / ${queue.length}`;
+  // Hooks must run unconditionally on every render (React's Rules of
+  // Hooks), so these four run before the `!current` early return below —
+  // they previously sat after it and were skipped on the empty-queue
+  // render, which React flags as a hook-count mismatch.
+  //
+  // `wordMaybe` is possibly undefined here (only when `current` is
+  // undefined, right before the early return makes that render path
+  // moot); each switch below is null-safe so the memo body itself never
+  // throws. `word` below the guard is the narrowed, always-defined
+  // version the rest of the render relies on.
+  const wordMaybe = current?.word;
 
   // ── Placeholder text for each interaction type ─────────────────────────────
   const placeholder = useMemo(() => {
     switch (cardType) {
       case 'production':
-        return word.pos === 'noun' ? 'article + word' : 'type your answer';
+        return wordMaybe?.pos === 'noun'
+          ? 'article + word'
+          : 'type your answer';
       case 'recognition':
         return 'English meaning';
       case 'cloze':
         return 'missing word';
       case 'audio':
-        return word.pos === 'noun' ? 'article + word' : 'type what you hear';
+        return wordMaybe?.pos === 'noun'
+          ? 'article + word'
+          : 'type what you hear';
       default:
         return 'type your answer';
     }
-  }, [cardType, word.pos]);
+  }, [cardType, wordMaybe?.pos]);
 
   // ── Accessible label for the answer input ──────────────────────────────────
   const inputLabel = useMemo(() => {
     switch (cardType) {
       case 'production':
-        return word.pos === 'noun' ? `Answer for ${word.gloss_en}, including article` : `Answer for ${word.gloss_en}`;
+        return wordMaybe?.pos === 'noun'
+          ? `Answer for ${wordMaybe.gloss_en}, including article`
+          : `Answer for ${wordMaybe?.gloss_en}`;
       case 'recognition':
-        return `English meaning of ${word.lemma}`;
+        return `English meaning of ${wordMaybe?.lemma}`;
       case 'cloze':
         return 'Fill in the blank';
       case 'audio':
-        return word.pos === 'noun' ? `Type what you hear, including article` : 'Type what you hear';
+        return wordMaybe?.pos === 'noun'
+          ? `Type what you hear, including article`
+          : 'Type what you hear';
       default:
         return 'Your answer';
     }
-  }, [cardType, word]);
+  }, [cardType, wordMaybe]);
 
   // ── Prompt text shown on the card front ────────────────────────────────────
   const promptLabel = useMemo(() => {
     switch (cardType) {
       case 'production':
-        return word.gloss_en;
+        return wordMaybe?.gloss_en;
       case 'recognition':
-        return word.gender
-          ? `${word.gender} ${word.lemma}`
-          : word.lemma;
+        return wordMaybe?.gender
+          ? `${wordMaybe.gender} ${wordMaybe.lemma}`
+          : wordMaybe?.lemma;
       case 'cloze':
-        return current.clozeText ?? word.example_de;
+        return current?.clozeText ?? wordMaybe?.example_de;
       case 'audio':
         return 'Listen and type';
       default:
-        return word.gloss_en;
+        return wordMaybe?.gloss_en;
     }
-  }, [cardType, word, current.clozeText]);
+  }, [cardType, wordMaybe, current?.clozeText]);
 
   // ── Secondary hint under the prompt ────────────────────────────────────────
   const promptHint = useMemo(() => {
@@ -229,6 +262,20 @@ export function Session() {
     }
   }, [cardType]);
 
+  if (!current) {
+    return (
+      <main className="session" id="main-content">
+        <p>No cards in session.</p>
+        <button onClick={() => navigate('/')} aria-label="Go home">
+          Go home
+        </button>
+      </main>
+    );
+  }
+
+  const { word } = current;
+  const progress = `${currentIndex + 1} / ${queue.length}`;
+
   return (
     <main className="session" id="main-content">
       {/* Screen reader live region — announces word details on flip */}
@@ -239,15 +286,8 @@ export function Session() {
       {/* Progress */}
       <div className="session-progress" aria-label={`Card ${progress}`}>
         <span className="session-progress-text">{progress}</span>
-        {current.kind === 'new' && (
-          <span className="badge-new">new</span>
-        )}
-        <span
-          className="badge-type"
-          style={{ fontSize: '12px', color: 'var(--color-neutral-4)', marginLeft: '6px' }}
-        >
-          {cardType}
-        </span>
+        {current.kind === 'new' && <span className="badge-new">new</span>}
+        <span className="badge-type">{cardType}</span>
       </div>
 
       {/* Card */}
@@ -272,35 +312,36 @@ export function Session() {
           }
         }}
       >
-        {/* ── Pronunciation button (top-right) ──────────────────────── */}
-        {flipped && canPlay && (
-          <button
-            className="btn-pronounce"
-            onClick={(e) => {
-              e.stopPropagation();
-              playWord(word.id);
-            }}
-            aria-label={`Pronounce ${word.lemma}`}
-            title="Pronounce (P)"
-          >
-            🔊
-          </button>
-        )}
-
-        {/* ── Front: prompt (varies by cardType) ── */}
-        {!flipped && (
-          <div className="card-front">
+        {/* Both faces stay mounted so the 280ms rotateY has something
+            to rotate to. The face turned away is made `inert` below,
+            which removes it from tab order AND the a11y tree —
+            backface-visibility only hides pixels. */}
+        <div className="card-inner">
+          {/* ── Front: prompt (varies by cardType) ── */}
+          <div className="card-front" ref={frontFaceRef}>
             {cardType === 'audio' && (
               <audio ref={audioRef} src={word.audio_word} preload="auto" />
             )}
             <p className="card-gloss">{promptLabel}</p>
             <p className="card-hint">{promptHint}</p>
           </div>
-        )}
 
-        {/* ── Back: word + feedback ── */}
-        {flipped && (
-          <div className="card-back">
+          {/* ── Back: word + feedback ── */}
+          <div className="card-back" ref={backFaceRef}>
+            {/* ── Pronunciation button (top-right) ──────────────────── */}
+            {canPlay && (
+              <button
+                className="btn-pronounce"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playWord(word.id);
+                }}
+                aria-label={`Pronounce ${word.lemma}`}
+                title="Pronounce (P)"
+              >
+                <SpeakerIcon />
+              </button>
+            )}
             {word.gender && (
               <span
                 className="gender-ribbon"
@@ -313,13 +354,13 @@ export function Session() {
             {cardType === 'recognition' && (
               <>
                 <h2 className="card-word">
-                  {word.gender && <span className="card-article">{word.gender} </span>}
+                  {word.gender && (
+                    <span className="card-article">{word.gender} </span>
+                  )}
                   {word.lemma}
                 </h2>
                 {word.plural && (
-                  <p className="card-plural">
-                    Pl. {word.plural}
-                  </p>
+                  <p className="card-plural">Pl. {word.plural}</p>
                 )}
               </>
             )}
@@ -328,18 +369,16 @@ export function Session() {
             {(cardType === 'production' || cardType === 'audio') && (
               <>
                 <h2 className="card-word">
-                  {word.gender && <span className="card-article">{word.gender} </span>}
+                  {word.gender && (
+                    <span className="card-article">{word.gender} </span>
+                  )}
                   {word.lemma}
                 </h2>
                 {word.plural && (
-                  <p className="card-plural">
-                    Pl. {word.plural}
-                  </p>
+                  <p className="card-plural">Pl. {word.plural}</p>
                 )}
                 {word.example_de && (
-                  <p className="card-example">
-                    {word.example_de}
-                  </p>
+                  <p className="card-example">{word.example_de}</p>
                 )}
               </>
             )}
@@ -347,7 +386,8 @@ export function Session() {
             {/* Cloze: show the full sentence (with answer revealed after grading) */}
             {cardType === 'cloze' && (
               <p className="card-example">
-                {current.clozeText?.replace('_____', word.lemma) ?? word.example_de}
+                {current.clozeText?.replace('_____', word.lemma) ??
+                  word.example_de}
               </p>
             )}
 
@@ -363,9 +403,8 @@ export function Session() {
                   }
                 }}
                 aria-label="Replay audio"
-                style={{ marginTop: '8px', fontSize: '14px' }}
               >
-                🔊 Replay
+                <SpeakerIcon /> Replay
               </button>
             )}
 
@@ -376,22 +415,30 @@ export function Session() {
                 e.stopPropagation();
                 setShowWordDetail(!showWordDetail);
               }}
-              aria-label={showWordDetail ? 'Hide word details' : 'Show word details'}
+              aria-label={
+                showWordDetail ? 'Hide word details' : 'Show word details'
+              }
               aria-expanded={showWordDetail}
             >
               ℹ
             </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* ── Word detail mini-view ───────────────────────────────────── */}
       {flipped && showWordDetail && (
-        <div className="word-detail-mini" role="region" aria-label="Word details">
+        <div
+          className="word-detail-mini"
+          role="region"
+          aria-label="Word details"
+        >
           <div className="word-detail-row">
             <span className="word-detail-label">Word</span>
             <span className="word-detail-value">
-              {word.gender && <span className="card-article">{word.gender} </span>}
+              {word.gender && (
+                <span className="card-article">{word.gender} </span>
+              )}
               {word.lemma}
             </span>
           </div>
@@ -482,12 +529,12 @@ export function Session() {
             {grading === 'typo' && 'Almost'}
             {grading === 'wrong' && '✗'}
           </p>
-          <p className="feedback-correct">
-            {correctForm}
-          </p>
+          <p className="feedback-correct">{correctForm}</p>
           {grading !== 'correct' && (
             <p className="feedback-hint">
-              {grading === 'wrong' && word.pos === 'noun' && 'Remember: der/die/das'}
+              {grading === 'wrong' &&
+                word.pos === 'noun' &&
+                'Remember: der/die/das'}
             </p>
           )}
           <button ref={nextBtnRef} onClick={handleNext} className="btn-primary">

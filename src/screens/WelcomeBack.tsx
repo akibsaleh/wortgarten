@@ -53,7 +53,7 @@ export function WelcomeBack() {
   if (loading) {
     return (
       <main className="home" id="main-content">
-        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
+        <p className="loading-text">Loading…</p>
       </main>
     );
   }
@@ -82,7 +82,7 @@ export function WelcomeBack() {
       >
         Start comeback session
       </button>
-      <p className="welcome-back-hint" style={{ fontSize: '13px', color: 'var(--color-neutral-4)' }}>
+      <p className="welcome-back-hint">
         5 minutes · diagnostic review
       </p>
     </main>

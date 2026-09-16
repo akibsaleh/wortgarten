@@ -3,5 +3,8 @@ dist
 .git
 scripts/.venv
 scripts/curation
+scripts/voices
 .commandcode
 .claude
+test-results
+playwright-report

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SpeakerIcon } from '../components/SpeakerIcon';
 import { db } from '../db';
 import { useAudio } from '../audio/useAudio';
 
@@ -175,7 +176,7 @@ export function Onboarding() {
 
           {/* Typing area (appears after flip) */}
           {practiceFlipped && practiceResult === 'idle' && (
-            <div className="session-input" style={{ marginTop: 'var(--space-4)' }}>
+            <div className="session-input onboarding-input-row">
               <label htmlFor="onboarding-answer" className="sr-only">
                 Answer for {PRACTICE_WORD.gloss_en}, including article
               </label>
@@ -215,7 +216,7 @@ export function Onboarding() {
               <p className="feedback-correct">
                 {PRACTICE_WORD.gender} {PRACTICE_WORD.lemma}
               </p>
-              <p className="feedback-hint" style={{ marginBottom: 'var(--space-4)' }}>
+              <p className="feedback-hint onboarding-feedback-hint">
                 {practiceResult === 'wrong' && 'In a real session, you\'ll see this after checking your answer.'}
                 {practiceResult === 'correct' && 'That\'s how it works — simple as that.'}
               </p>
@@ -237,7 +238,7 @@ export function Onboarding() {
             onClick={handlePlayTest}
             aria-label="Play test word"
           >
-            <span className="onboarding-play-icon">🔊</span>
+            <span className="onboarding-play-icon"><SpeakerIcon /></span>
             <span>{audioPlayed ? 'Play again' : 'Play'}</span>
           </button>
 
@@ -246,16 +247,14 @@ export function Onboarding() {
               <p className="onboarding-confirm-text">Could you hear it?</p>
               <div className="onboarding-confirm-buttons">
                 <button
-                  className="btn-primary"
+                  className="btn-primary onboarding-confirm-btn"
                   onClick={() => setAudioConfirmed(true)}
-                  style={{ maxWidth: '140px' }}
                 >
                   Yes
                 </button>
                 <button
-                  className="btn-skip"
+                  className="btn-skip onboarding-confirm-btn"
                   onClick={() => setAudioConfirmed(true)}
-                  style={{ maxWidth: '140px' }}
                 >
                   Skip for now
                 </button>
@@ -277,10 +276,9 @@ export function Onboarding() {
           Skip all
         </button>
         <button
-          className="btn-primary"
+          className="btn-primary onboarding-skip-btn"
           onClick={handleNext}
           disabled={step === 2 && audioPlayed && !audioConfirmed}
-          style={{ maxWidth: '160px' }}
         >
           {step < 2 ? 'Next' : 'Start learning'}
         </button>

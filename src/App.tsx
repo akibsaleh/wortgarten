@@ -27,7 +27,7 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
   if (!checked) {
     return (
       <main className="home" id="main-content">
-        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
+        <p className="loading-text">Loading…</p>
       </main>
     );
   }
@@ -68,7 +68,7 @@ function RequireRebootAware({ children }: { children: React.ReactNode }) {
   if (checking) {
     return (
       <main className="home" id="main-content">
-        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
+        <p className="loading-text">Loading…</p>
       </main>
     );
   }

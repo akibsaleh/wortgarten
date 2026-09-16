@@ -1,0 +1,135 @@
+/* ==========================================================
+   motion.css — every @keyframes and both reduced-motion
+   guards live here, so motion coverage is auditable at a
+   glance. Spec: docs/04-design-assets.md §1.4, §7.
+   ========================================================== */
+
+/* ── Fade-slide-in animation ─────────────────────────────── */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────
+   All animation collapses to instant opacity crossfade.
+   OS-level preference + in-app toggle (§4 screen 7). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Reduced-motion utility class (in-app toggle) ────────
+   Applied via a <body class="reduced-motion"> when the user
+   enables the in-app toggle in Settings.                    */
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+
+/* ── Session-summary ripple (spec §7.5) ────────────────────
+   Concentric thin rings expanding from centre on a ~2.4s
+   ambient loop. "No confetti — a slow still-water ripple."
+   Only transform + opacity animate, so this stays on the
+   compositor. Scoped to .summary-ripple, which unmounts with
+   the screen — never attach an infinite loop to a persistent
+   element.                                                  */
+@keyframes rippleExpand {
+  from {
+    transform: scale(0.35);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ── Pronunciation ripple (spec §7.2) ──────────────────────
+   Gentle radial accent ripple from the button on press.     */
+@keyframes pressRipple {
+  from {
+    transform: scale(0.4);
+    opacity: 0.35;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* ── Progress-ring fill (spec §7.3) ────────────────────────
+   `from`-only: runs to each ring's own computed offset, so
+   every ring grows from empty to its own value on mount.    */
+@keyframes ringFill {
+  from {
+    stroke-dashoffset: var(--ring-circumference);
+  }
+}
+
+/* ── Screen entry ──────────────────────────────────────────
+   One shared entry motion for every route, so the whole app
+   has a single motion rhythm. Reuses the existing keyframe.
+   --motion-med (180ms), inside the 120–250ms band; NOT
+   --motion-flip, which is a card-only exception.            */
+.home,
+.session,
+.summary,
+.settings,
+.onboarding,
+.dashboard,
+.welcome-back {
+  animation: fadeSlideIn var(--motion-med) var(--ease);
+}
+
+/* ── Reduced motion: spec-mandated end states ──────────────
+   The blanket guards above collapse durations, but §7.5 and
+   §7.2 require a DIFFERENT end state, not merely an instant
+   one. §7.5: a static frame. §7.2: no ripple at all.
+   (animation-iteration-count:1 alone would still play the
+   ripple once, which is not what the spec asks for.)        */
+@media (prefers-reduced-motion: reduce) {
+  .ripple-ring {
+    animation: none !important;
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  .ripple-ring:not(:first-child) {
+    display: none;
+  }
+
+  .btn-pronounce::after {
+    display: none !important;
+  }
+}
+
+body.reduced-motion .ripple-ring {
+  animation: none !important;
+  opacity: 0.3;
+  transform: scale(1);
+}
+
+body.reduced-motion .ripple-ring:not(:first-child) {
+  display: none;
+}
+
+body.reduced-motion .btn-pronounce::after {
+  display: none !important;
+}

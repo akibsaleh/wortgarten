@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['audio/**/*.ogg'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ogg,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ogg,png,svg,woff2}'],
         maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // 50 MB for audio
         runtimeCaching: [
           {

@@ -71,7 +71,7 @@ export function Dashboard() {
   if (!data) {
     return (
       <main className="dashboard" id="main-content">
-        <p style={{ color: 'var(--color-neutral-3)' }}>Loading…</p>
+        <p className="loading-text">Loading…</p>
       </main>
     );
   }
@@ -85,15 +85,7 @@ export function Dashboard() {
 
   return (
     <main className="dashboard" id="main-content">
-      <h2
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '31px',
-          color: 'var(--color-ink)',
-        }}
-      >
-        Progress
-      </h2>
+      <h2 className="dashboard-title">Progress</h2>
 
       {/* ---- Three rings ---- */}
       <div className="dashboard-rings">
@@ -137,15 +129,7 @@ export function Dashboard() {
 
       {/* ---- CEFR band breakdown ---- */}
       <div className="dashboard-bands">
-        <h3
-          style={{
-            fontSize: '16px',
-            color: 'var(--color-ink)',
-            marginBottom: '12px',
-          }}
-        >
-          Words by level
-        </h3>
+        <h3 className="dashboard-bands-title">Words by level</h3>
         {(['A1', 'A2', 'B1'] as const).map((level) => (
           <div className="band-row" key={level}>
             <span className="band-label">{level}</span>
@@ -153,7 +137,7 @@ export function Dashboard() {
               <div
                 className="band-bar"
                 style={{
-                  width: `${(data.bands[level] / TOTAL_WORDS) * 100}%`,
+                  transform: `scaleX(${data.bands[level] / TOTAL_WORDS})`,
                 }}
               />
             </div>
