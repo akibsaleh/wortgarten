@@ -9,3 +9,4 @@ scripts/.venv/
 .env.*
 test-results/
 playwright-report/
+.claude/skills/ui-ux-pro-max/scripts/__pycache__/

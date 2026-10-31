@@ -8,7 +8,9 @@ import './styles/index.css';
 // Service Worker registration
 // ---------------------------------------------------------------------------
 
-if ('serviceWorker' in navigator) {
+// Prod only: vite-plugin-pwa generates sw.js at build time; in dev the
+// request falls through to the SPA fallback (text/html) and registration fails.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')

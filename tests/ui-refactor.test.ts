@@ -270,7 +270,7 @@ describe('offline typography', () => {
 
   it('self-hosts both families', () => {
     const r = css('reset.css');
-    expect(r).toContain("font-family: 'Inter'");
+    expect(r).toContain("font-family: 'Nunito'");
     expect(r).toContain("font-family: 'Source Serif 4'");
     expect(r).toMatch(/src: url\('\.\.\/assets\/fonts\//);
     expect(r).toContain('font-display: swap');
@@ -285,13 +285,13 @@ describe('offline typography', () => {
     expect(ranges.some((r) => /U\+0100-02BA/.test(r)), 'no latin-ext range').toBe(true);
   });
 
-  it('sources fonts from upstream releases, not Google Fonts', () => {
-    // Google's re-served build of both families silently drops ẞ
-    // (U+1E9E) even though the source fonts contain it. Verified via
-    // fontTools against the actual upstream releases (rsms/inter v4.1,
-    // adobe-fonts/source-serif 4.005R) before switching the source.
+  it('sources fonts from upstream releases, not Google Fonts CDN', () => {
+    // The ẞ (U+1E9E) gap: Google's re-served builds silently dropped it.
+    // Current sources — Nunito via @fontsource/nunito (latin-ext subset
+    // verified to carry U+1E9E with fontTools), Source Serif 4 via
+    // adobe-fonts/source-serif 4.005R.
     const r = css('reset.css');
-    expect(r).toContain('rsms/inter');
+    expect(r).toContain('@fontsource/nunito');
     expect(r).toContain('adobe-fonts/source-serif');
     expect(r).not.toContain('KNOWN GAP');
   });

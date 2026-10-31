@@ -9,7 +9,7 @@
  *  3. Detect whether a de-DE voice is available (used to show/hide the
  *     pronunciation button).
  */
-import wordsData from '../../public/words.json';
+import wordsData from '../assets/words.json';
 import { AUDIO_CACHE_NAME, startPrecache } from './precache';
 import { useAudioStore } from './audioStore';
 

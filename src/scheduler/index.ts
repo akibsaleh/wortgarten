@@ -23,6 +23,7 @@ export function newCard(wordId: string, type: Card['type']): Card {
     lapses: empty.lapses,
     state: empty.state,
     last_review: null,
+    introduced_at: null,
   };
 }
 
@@ -76,6 +77,11 @@ export async function rateCard(
   });
 
   return { card: updated, log: logEntry };
+}
+
+/** Mark every card of a word as introduced (called when an intro card is answered). */
+export async function markWordIntroduced(wordId: string): Promise<void> {
+  await db.cards.where('wordId').equals(wordId).modify({ introduced_at: new Date() });
 }
 
 /** Map interaction outcome to FSRS rating per PLAN.md §3. */

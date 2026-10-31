@@ -163,6 +163,27 @@ export function gradeRecognition(input: GradingInput): GradingOutput {
   return { grade: 'wrong', correctForm: gloss, article: null };
 }
 
+/**
+ * Grade a cloze answer against the pre-computed blanked surface form.
+ * No article requirement — the blank is the word as it appeared in the
+ * sentence, so an inflected surface form is the correct answer.
+ */
+export function gradeCloze(input: GradingInput): GradingOutput {
+  const target = input.word.cloze_answer ?? input.word.lemma;
+  const normAnswer = normalizeWithFallback(input.answer);
+  const normCorrect = normalizeWithFallback(target);
+
+  if (normAnswer === normCorrect) {
+    return { grade: 'correct', correctForm: target, article: null };
+  }
+
+  if (levenshtein(normAnswer, normCorrect) <= 1) {
+    return { grade: 'typo', correctForm: target, article: null };
+  }
+
+  return { grade: 'wrong', correctForm: target, article: null };
+}
+
 /** Pace thresholds from Amendment A6. */
 export function paceFromMs(ms: number): 'instant' | 'normal' | 'slow' {
   if (ms < 2500) return 'instant';

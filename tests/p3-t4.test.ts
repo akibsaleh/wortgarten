@@ -50,6 +50,8 @@ function makeWord(overrides: Partial<Word>): Word {
     cefr: 'A1',
     freq_rank: 999,
     source: [],
+    cloze_sentence: null,
+    cloze_answer: null,
     ...overrides,
   };
 }
@@ -68,6 +70,7 @@ function makeCard(overrides: Partial<Card>): Card {
     lapses: 0,
     state: 0,
     last_review: null,
+    introduced_at: null,
     ...overrides,
   };
 }

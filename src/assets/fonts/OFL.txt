@@ -1,10 +1,10 @@
-Inter and Source Serif 4 are licensed under the SIL Open Font License, Version 1.1.
+Nunito and Source Serif 4 are licensed under the SIL Open Font License, Version 1.1.
 
-Source: subsetted from the upstream releases, not from Google Fonts.
-  Inter          — rsms/inter, release v4.1        (https://github.com/rsms/inter)
+Sources:
+  Nunito         — @fontsource/nunito (npm), upstream: googlefonts/nunito
   Source Serif 4 — adobe-fonts/source-serif, 4.005R (https://github.com/adobe-fonts/source-serif)
 
-Inter — Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)
+Nunito — Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
 Source Serif 4 — Copyright (c) 2014-2023 Adobe (http://www.adobe.com/)
 
 Full licence text: https://openfontlicense.org/open-font-license-official-text/

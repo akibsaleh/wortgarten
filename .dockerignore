@@ -8,3 +8,4 @@ scripts/voices
 .claude
 test-results
 playwright-report
+.env*

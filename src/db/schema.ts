@@ -10,6 +10,12 @@ export interface Word {
   gloss_en: string;
   example_de: string;
   example_en: string;
+  /** example_de with the target surface form blanked; null when the lemma
+      never appears verbatim in the sentence (e.g. separable verbs) —
+      such words never receive cloze cards. */
+  cloze_sentence: string | null;
+  /** The exact surface form that was blanked out. */
+  cloze_answer: string | null;
   case_note: string | null;
   separable: boolean;
   prefix: string | null;
@@ -37,6 +43,8 @@ export interface Card {
   lapses: number;
   state: number; // 0=New, 1=Learning, 2=Review, 3=Relearning
   last_review: Date | null;
+  /** When this word was first shown to the learner (intro card). Null = never introduced. */
+  introduced_at: Date | null;
 }
 
 // PLAN.md §3 — append-only review log
@@ -110,6 +118,20 @@ db.version(2).stores({
       notification_time: '09:00',
     });
   }
+});
+
+// P2-T6 — backfill introduced_at; indexes unchanged
+db.version(3).stores({
+  words: 'id, freq_rank, cefr, theme',
+  cards: 'id, wordId, type, due, state',
+  reviewLogs: '++id, cardId, wordId, review',
+  sessions: '++id, started',
+  settings: 'id',
+}).upgrade(async (tx) => {
+  await tx.table('cards').toCollection().modify((card: Card) => {
+    // A card that has been reviewed was necessarily introduced already
+    card.introduced_at = card.last_review ?? null;
+  });
 });
 
 export { db };

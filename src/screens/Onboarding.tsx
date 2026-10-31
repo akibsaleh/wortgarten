@@ -27,7 +27,16 @@ export function Onboarding() {
   const [practiceAnswer, setPracticeAnswer] = useState('');
   const [practiceResult, setPracticeResult] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const practiceInputRef = useRef<HTMLInputElement>(null);
+  const practiceFrontRef = useRef<HTMLDivElement>(null);
+  const practiceBackRef = useRef<HTMLDivElement>(null);
   const [practiceAnnounce, setPracticeAnnounce] = useState('');
+
+  /* Both faces stay mounted for the flip; the face turned away is inert
+     so it leaves the tab order and a11y tree (same pattern as Session). */
+  useEffect(() => {
+    if (practiceFrontRef.current) practiceFrontRef.current.inert = practiceFlipped;
+    if (practiceBackRef.current) practiceBackRef.current.inert = !practiceFlipped;
+  }, [practiceFlipped]);
 
   /* Step 3 — audio check */
   const [audioPlayed, setAudioPlayed] = useState(false);
@@ -151,14 +160,12 @@ export function Onboarding() {
               }
             }}
           >
-            {!practiceFlipped && (
-              <div className="card-front">
+            <div className="card-inner">
+              <div className="card-front" ref={practiceFrontRef}>
                 <p className="card-gloss">{PRACTICE_WORD.gloss_en}</p>
                 <p className="card-hint">Tap or press Space</p>
               </div>
-            )}
-            {practiceFlipped && (
-              <div className="card-back">
+              <div className="card-back" ref={practiceBackRef}>
                 <span
                   className="gender-ribbon"
                   style={{ backgroundColor: `var(--color-${PRACTICE_WORD.gender})` }}
@@ -171,7 +178,7 @@ export function Onboarding() {
                 <p className="card-plural">Pl. {PRACTICE_WORD.plural}</p>
                 <p className="card-example">{PRACTICE_WORD.example_de}</p>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Typing area (appears after flip) */}

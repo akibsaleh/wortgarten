@@ -5,12 +5,16 @@
  *
  * P2-T3 adds weighted interaction-type assignment:
  *   production ~50%, recognition ~25%, cloze ~15%, audio ~10%.
+ * P2-T6 adds the first-exposure gate: unseen words get an 'intro' card
+ *   (never a quiz), then recognition-only until 2 graded recalls. Cloze
+ *   requires pipeline-computed cloze data on the word.
  */
 import { db, type Card, type Word } from '../db/schema';
 
 const ESTIMATED_SEC_PER_CARD = 9;
 
-export type CardType = 'production' | 'recognition' | 'cloze' | 'audio';
+export type CardType =
+  'production' | 'recognition' | 'cloze' | 'audio' | 'intro';
 
 export interface SessionCard {
   card: Card;
@@ -41,27 +45,17 @@ function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Count how many new cards have been introduced today. */
+/** Count how many new words have been introduced today (intro card shown). */
 async function newCardsIntroducedToday(): Promise<number> {
-  const today = todayKey();
-  const todayStart = new Date(today + 'T00:00:00');
-  const logs = await db.reviewLogs
-    .where('review')
-    .aboveOrEqual(todayStart)
-    .toArray();
-  // A card goes from New → Learning on its first review.
-  // Count distinct wordIds that had their first review today.
-  const firstReviews = new Set<string>();
-  for (const log of logs) {
-    if (log.rating !== 0) {
-      // Check if this was the card's first review
-      const card = await db.cards.get(log.cardId);
-      if (card && card.reps <= 1) {
-        firstReviews.add(log.wordId);
-      }
+  const todayStart = new Date(todayKey() + 'T00:00:00');
+  const cards = await db.cards.toArray();
+  const introduced = new Set<string>();
+  for (const c of cards) {
+    if (c.introduced_at && c.introduced_at >= todayStart) {
+      introduced.add(c.wordId);
     }
   }
-  return firstReviews.size;
+  return introduced.size;
 }
 
 /**
@@ -81,10 +75,11 @@ export async function composeSession(
 
   // --- Due reviews ---
   const now = new Date();
-  const dueCards = await db.cards
-    .where('due')
-    .belowOrEqual(now)
-    .toArray();
+  // New cards (state 0) are created with due=now — exclude them here so a
+  // card can't appear twice (once as "review", once as "new").
+  const dueCards = (
+    await db.cards.where('due').belowOrEqual(now).toArray()
+  ).filter((c) => c.state !== 0);
 
   // Sort by state first (Relearning before Review before Learning),
   // then by due date (most overdue first).
@@ -102,28 +97,29 @@ export async function composeSession(
   const newCards = allNew.slice(0, newNeeded);
 
   // Load word data for all cards
-  const wordIds = [...new Set([...cappedDue, ...newCards].map((c) => c.wordId))];
+  const wordIds = [
+    ...new Set([...cappedDue, ...newCards].map((c) => c.wordId)),
+  ];
   const words = await db.words.where('id').anyOf(wordIds).toArray();
   const wordMap = new Map(words.map((w) => [w.id, w]));
 
-  // Assign interaction types per weighted mix
-  let typeCounter = 0;
-  function nextType(): CardType {
-    const types: CardType[] = ['production', 'production', 'recognition', 'recognition', 'cloze', 'audio'];
-    const t = types[typeCounter % types.length]!;
-    typeCounter++;
-    return t;
-  }
-
-  // Mark kind
+  // Mark kind — cardType here is a placeholder; the real interaction type
+  // is assigned by assignCardTypes() once the final queue order is known.
   const sessionCards: SessionCard[] = [];
   for (const card of cappedDue) {
     const word = wordMap.get(card.wordId);
-    if (word) sessionCards.push({ card, word, kind: 'review', cardType: nextType() });
+    if (word)
+      sessionCards.push({
+        card,
+        word,
+        kind: 'review',
+        cardType: 'recognition',
+      });
   }
   for (const card of newCards) {
     const word = wordMap.get(card.wordId);
-    if (word) sessionCards.push({ card, word, kind: 'new', cardType: nextType() });
+    if (word)
+      sessionCards.push({ card, word, kind: 'new', cardType: 'recognition' });
   }
 
   // --- Interleave new words in thematic blocks of 3–5 ---
@@ -194,36 +190,25 @@ function djb2Hash(str: string): number {
     // hash * 33 + charCode
     hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0;
   }
-  return hash / 0x100000000; // normalize to [0, 1)
+  // Murmur3-style avalanche finalizer: plain djb2 clusters for strings
+  // sharing a prefix ("word::3" vs "word::4" differ by ~1e-9), which made
+  // per-position type weights nearly constant for a given word.
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x45d9f3b) >>> 0;
+  hash ^= hash >>> 16;
+  return (hash >>> 0) / 0x100000000; // normalize to [0, 1) — >>> keeps it unsigned
 }
 
 /**
- * Generate cloze text by blanking the lemma (case-insensitive) from example_de.
- * Returns the sentence with the first match replaced by "_____".
- * If the lemma is not found, returns the original sentence.
- */
-export function generateCloze(exampleDe: string, lemma: string): string {
-  // Build a regex that matches the lemma word-boundary, case-insensitive
-  const escaped = lemma.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`\\b${escaped}\\b`, 'i');
-  if (re.test(exampleDe)) {
-    return exampleDe.replace(re, '_____');
-  }
-  // Fallback: just blank the first occurrence of the lemma substring
-  const idx = exampleDe.toLowerCase().indexOf(lemma.toLowerCase());
-  if (idx >= 0) {
-    return (
-      exampleDe.slice(0, idx) +
-      '_____' +
-      exampleDe.slice(idx + lemma.length)
-    );
-  }
-  // If still not found, return original with a trailing blank
-  return `${exampleDe} (_____)`;
-}
-
-/**
- * Assign card types to session cards using a deterministic weighted random.
+ * Assign card types. Two gates run before the weighted mix:
+ *
+ * 1. First-exposure gate (PLAN.md §3): a word never seen is introduced, never
+ *    quizzed — 'intro' for its first card in the session, 'recognition' for
+ *    any further card of the same word. Cards stay recognition-only until
+ *    2 graded recalls; production/cloze/audio unlock after that.
+ * 2. Cloze eligibility: only words with pipeline-computed cloze data
+ *    (cloze_sentence/cloze_answer) can receive cloze cards; their share
+ *    falls back to production/recognition otherwise.
  *
  * Weights (PLAN.md §3):
  *   production  ~50%
@@ -231,47 +216,54 @@ export function generateCloze(exampleDe: string, lemma: string): string {
  *   cloze       ~15%
  *   audio       ~10% (only when audio_word is non-empty)
  *
- * When audio is unavailable the 10% slice is redistributed:
- *   production gets 60%, recognition 25%, cloze 15%.
+ * When audio is unavailable the 10% slice is redistributed to production.
  */
 export function assignCardTypes(cards: SessionCard[]): SessionCard[] {
+  const introGivenTo = new Set<string>();
+
   return cards.map((sc, idx) => {
-    const hasAudio = sc.word.audio_word && sc.word.audio_word.trim().length > 0;
-    const hasExample = sc.word.example_de && sc.word.example_de.trim().length > 0;
+    const neverIntroduced = !sc.card.introduced_at && sc.card.reps === 0;
+    if (neverIntroduced && !introGivenTo.has(sc.word.id)) {
+      introGivenTo.add(sc.word.id);
+      return { ...sc, cardType: 'intro' as const };
+    }
+    if (neverIntroduced || sc.card.reps < 2) {
+      return { ...sc, cardType: 'recognition' as const };
+    }
+
+    const hasAudio = Boolean(sc.word.audio_word?.trim());
+    const hasCloze = Boolean(sc.word.cloze_sentence && sc.word.cloze_answer);
 
     // Deterministic seed: card index + word id
-    const seed = djb2Hash(`${sc.word.id}::${idx}`);
-    const r = seed; // value in [0, 1)
+    const r = djb2Hash(`${sc.word.id}::${idx}`); // value in [0, 1)
 
     let cardType: CardType;
-
     if (hasAudio) {
       // Full 4-way split
-      if (r < 0.50) {
+      if (r < 0.5) {
         cardType = 'production';
       } else if (r < 0.75) {
         cardType = 'recognition';
-      } else if (r < 0.90) {
-        cardType = hasExample ? 'cloze' : 'production';
+      } else if (r < 0.9) {
+        cardType = hasCloze ? 'cloze' : 'production';
       } else {
         cardType = 'audio';
       }
     } else {
       // No audio: redistribute audio's 10% to production
-      if (r < 0.60) {
+      if (r < 0.6) {
         cardType = 'production';
       } else if (r < 0.85) {
         cardType = 'recognition';
       } else {
-        cardType = hasExample ? 'cloze' : 'recognition';
+        cardType = hasCloze ? 'cloze' : 'recognition';
       }
     }
 
-    const clozeText =
-      cardType === 'cloze'
-        ? generateCloze(sc.word.example_de, sc.word.lemma)
-        : undefined;
-
-    return { ...sc, cardType, clozeText };
+    return {
+      ...sc,
+      cardType,
+      clozeText: cardType === 'cloze' ? sc.word.cloze_sentence! : undefined,
+    };
   });
 }

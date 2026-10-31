@@ -1,18 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="64" fill="#3F7D5D"/>
-  <g fill="none" stroke="#FBFAF7" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E9E4F7"/>
+      <stop offset="1" stop-color="#F6F3FC"/>
+    </linearGradient>
+    <linearGradient id="sprout" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6D5AE0"/>
+      <stop offset="1" stop-color="#8F83F0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#6D5AE0" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#6D5AE0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="64" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="64" fill="url(#glow)"/>
+  <g fill="none" stroke="url(#sprout)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
     <!-- Stem -->
     <path d="M256 420 C256 420, 256 200, 256 160"/>
     <!-- Main leaf -->
-    <path d="M256 160 C212 128, 144 118, 128 168 C112 218, 192 288, 256 256" fill="#FBFAF7" fill-opacity="0.15"/>
+    <path d="M256 160 C212 128, 144 118, 128 168 C112 218, 192 288, 256 256" fill="#6D5AE0" fill-opacity="0.14"/>
     <path d="M256 160 C212 128, 144 118, 128 168 C112 218, 192 288, 256 256"/>
     <!-- Leaf veins -->
     <path d="M256 186 C234 176, 192 172, 168 192"/>
     <path d="M256 212 C240 208, 200 208, 182 224"/>
     <!-- Small leaf right -->
-    <path d="M256 200 C300 176, 348 180, 360 210 C372 240, 312 288, 256 264" fill="#FBFAF7" fill-opacity="0.15"/>
+    <path d="M256 200 C300 176, 348 180, 360 210 C372 240, 312 288, 256 264" fill="#6D5AE0" fill-opacity="0.14"/>
     <path d="M256 200 C300 176, 348 180, 360 210 C372 240, 312 288, 256 264"/>
   </g>
   <!-- W letter -->
-  <text x="256" y="396" text-anchor="middle" font-family="Georgia, serif" font-size="60" font-weight="bold" fill="#FBFAF7" opacity="0.9">W</text>
+  <text x="256" y="396" text-anchor="middle" font-family="Georgia, serif" font-size="60" font-weight="bold" fill="#322E48" opacity="0.92">W</text>
 </svg>

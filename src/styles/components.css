@@ -11,34 +11,92 @@
   margin: 0 auto;
   padding: var(--space-3) var(--space-6);
   background: var(--color-accent);
-  color: var(--color-paper);
+  color: var(--color-on-accent);
   border: none;
   border-radius: var(--radius-card);
   font-size: var(--text-16);
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity var(--motion-fast) var(--ease);
+  box-shadow: var(--shadow-clay-raised);
+  transition: box-shadow var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-clay);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
 .btn-primary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-clay-raised);
+}
+
+.btn-secondary {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface-2);
+  color: var(--color-accent-text);
+  border: none;
+  border-radius: var(--radius-card);
+  font-size: var(--text-14);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-clay-raised);
+  transition: box-shadow var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
+}
+
+.btn-secondary:hover {
+  box-shadow: var(--shadow-clay);
+}
+
+.btn-secondary:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-clay-pressed);
+}
+
+/* Intro card actions — two choices side by side */
+.intro-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  align-items: center;
+}
+
+.intro-actions .btn-primary {
+  width: auto;
+  margin: 0;
 }
 
 .btn-submit {
   padding: var(--space-3) var(--space-5);
   background: var(--color-accent);
-  color: var(--color-paper);
+  color: var(--color-on-accent);
   border: none;
   border-radius: var(--radius-card);
   font-size: var(--text-14);
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity var(--motion-fast) var(--ease);
+  box-shadow: var(--shadow-clay-raised);
+  transition: box-shadow var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease),
+              opacity var(--motion-fast) var(--ease);
+}
+
+.btn-submit:hover {
+  box-shadow: var(--shadow-clay);
+}
+
+.btn-submit:active {
+  transform: scale(0.96);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
 .btn-submit:disabled {
@@ -112,9 +170,10 @@
   width: 100%;
   max-width: 480px;
   min-height: 280px;
-  border: var(--border-soft);
+  border: none;
   border-radius: var(--radius-lg);
-  background: var(--color-paper);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-clay);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -124,7 +183,8 @@
   position: relative;
   overflow: hidden;
   user-select: none;
-  transition: box-shadow var(--motion-med) var(--ease);
+  transition: box-shadow var(--motion-med) var(--ease),
+              transform var(--motion-med) var(--ease);
   perspective: 1000px;
 }
 
@@ -224,18 +284,19 @@
 .text-input {
   flex: 1;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-neutral-2);
+  border: none;
   border-radius: var(--radius-card);
   font-size: var(--text-16);
   font-family: var(--font-sans);
-  background: var(--color-paper);
+  background: var(--color-surface-2);
   color: var(--color-ink);
   outline: none;
-  transition: border-color var(--motion-fast) var(--ease);
+  box-shadow: var(--shadow-clay-input);
+  transition: box-shadow var(--motion-fast) var(--ease);
 }
 
 .text-input:focus {
-  border-color: var(--color-accent);
+  box-shadow: var(--shadow-clay-input), var(--shadow-focus);
 }
 
 /* ── Feedback ──────────────────────────────────────────── */
@@ -328,25 +389,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-neutral-2);
+  border: none;
   border-radius: var(--radius-card);
-  background: var(--color-paper);
+  background: var(--color-surface);
   color: var(--color-ink);
   font-size: var(--text-16);
   font-family: var(--font-sans);
+  font-weight: 700;
   cursor: pointer;
-  transition: background var(--motion-fast) var(--ease),
-              border-color var(--motion-fast) var(--ease),
+  box-shadow: var(--shadow-clay-raised);
+  transition: box-shadow var(--motion-fast) var(--ease),
               transform var(--motion-fast) var(--ease);
 }
 
 .umlaut-chip:hover {
-  background: var(--color-neutral-1);
-  border-color: var(--color-accent);
+  box-shadow: var(--shadow-clay);
 }
 
 .umlaut-chip:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
 /* ── Session input wrapper (input + umlaut chips) ────────── */
@@ -362,10 +424,11 @@
 .word-detail-mini {
   width: 100%;
   max-width: 480px;
-  border: var(--border-soft);
+  border: none;
   border-radius: var(--radius-card);
   padding: var(--space-4);
-  background: var(--color-paper);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-clay-raised);
   animation: fadeSlideIn var(--motion-med) var(--ease);
 }
 
@@ -412,19 +475,26 @@
   width: var(--touch-min);
   height: var(--touch-min);
   margin-top: var(--space-2);
-  border: 1px solid var(--color-neutral-2);
-  background: transparent;
+  border: none;
+  background: var(--color-surface-2);
   border-radius: 50%;
   cursor: pointer;
   font-size: var(--text-14);
   color: var(--color-neutral-3);
+  box-shadow: var(--shadow-clay-raised);
   transition: color var(--motion-fast) var(--ease),
-              border-color var(--motion-fast) var(--ease);
+              box-shadow var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
 }
 
 .btn-word-detail:hover {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+  box-shadow: var(--shadow-clay);
+}
+
+.btn-word-detail:active {
+  transform: scale(0.92);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
 /* ── Skip button ─────────────────────────────────────────── */
@@ -434,20 +504,28 @@
   max-width: 160px;
   margin: 0 auto;
   padding: var(--space-3) var(--space-6);
-  background: transparent;
+  background: var(--color-surface-2);
   color: var(--color-neutral-4);
-  border: 1px solid var(--color-neutral-2);
+  border: none;
   border-radius: var(--radius-card);
   font-size: var(--text-14);
   font-family: var(--font-sans);
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-clay-raised);
   transition: color var(--motion-fast) var(--ease),
-              border-color var(--motion-fast) var(--ease);
+              box-shadow var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
 }
 
 .btn-skip:hover {
   color: var(--color-ink);
-  border-color: var(--color-neutral-3);
+  box-shadow: var(--shadow-clay);
+}
+
+.btn-skip:active {
+  transform: scale(0.96);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
 
@@ -464,8 +542,9 @@
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background: var(--color-paper);
-  border-top: 1px solid var(--color-neutral-2);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-banner);
+  border-top: 1px solid var(--color-neutral-1);
   z-index: var(--z-banner);
   animation: fadeSlideIn var(--motion-slow) var(--ease);
 }
@@ -503,20 +582,28 @@
   gap: var(--space-2);
   min-height: var(--touch-min);
   padding: var(--space-2) var(--space-4);
-  background: transparent;
-  border: 1px solid var(--color-neutral-2);
+  background: var(--color-surface-2);
+  border: none;
   border-radius: var(--radius-card);
   color: var(--color-neutral-3);
   font-size: var(--text-14);
   font-family: var(--font-sans);
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-clay-raised);
   transition: color var(--motion-fast) var(--ease),
-              border-color var(--motion-fast) var(--ease);
+              box-shadow var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
 }
 
 .btn-replay:hover {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+  box-shadow: var(--shadow-clay);
+}
+
+.btn-replay:active {
+  transform: scale(0.96);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
 /* ── Icons ─────────────────────────────────────────────────

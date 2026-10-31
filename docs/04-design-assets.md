@@ -1,6 +1,6 @@
 # 04 — Design Assets
 
-*Derived from and subordinate to PLAN.md — on conflict, PLAN.md wins. Status date: 2026-09-15.*
+*Derived from and subordinate to PLAN.md — on conflict, PLAN.md wins. Status date: 2026-09-16.*
 
 Scope: every visual, typographic, icon, audio, and generative asset the app ships, with production tool, license, phase, and status. This document specifies *assets*; component behavior lives in PLAN.md §4, stack/integration in [01-technical-specification.md](./01-technical-specification.md), verification in [03-testing-strategy.md](./03-testing-strategy.md), licensing NFRs in [05-constraints-and-nfrs.md](./05-constraints-and-nfrs.md), and scheduling of production work in [07-task-breakdown.md](./07-task-breakdown.md).
 
@@ -14,24 +14,30 @@ Single authoritative token copy, mirroring PLAN.md §4 exactly. Values are never
 
 ### 1.1 Palette
 
-| Token | Value | Role | Contrast on paper (measured¹) | PLAN §4 requirement |
-|---|---|---|---|---|
-| `--color-paper` | `#FBFAF7` | Background, warm off-white; never pure white | — | — |
-| `--color-ink` | `#23282D` | Primary text | 14.2:1 | 13.5:1 stated; ≥4.5:1 met either way |
-| `--color-accent` | `#3F7D5D` | Moss green — the *only* accent (fills, rings, focus, success) | 4.7:1 | Text on paper uses text variant |
-| `--color-accent-text` | `#2E5E46` | Accent as *text* on paper | 7.2:1 | ≥4.5:1 |
-| `--color-der` | `#3B6EA5` | Gender: der (soft blue) | 5.1:1 | ≥4.5:1 as text on paper |
-| `--color-die` | `#9E4B63` | Gender: die (muted rose) | 5.5:1 | ≥4.5:1 |
-| `--color-das` | `#8A6D1F` | Gender: das (warm sand) | 4.7:1 | ≥4.5:1 |
-| `--color-error` | `#B3563B` | Error feedback (muted terracotta); never neon red | 4.7:1 | ≥4.5:1 |
-| `--color-success` | = `--color-accent` | Success feedback *is* the accent; no separate token | — | — |
-| `--color-neutral-1…4` | 4 warm-gray steps, hexes assigned at Phase 2 token implementation | Borders, secondary text, disabled | — | Any text use ≥4.5:1; non-text boundaries ≥3:1 (WCAG 2.2 SC 1.4.11) |
+*Owner decision 2026-09-16: Claymorphism direction (third reskin, after zen-paper and modern-futuristic). All ratios re-measured per WCAG 2.x relative-luminance formula.*
 
-¹ Measured per WCAG 2.x relative-luminance formula on `#FBFAF7`. PLAN.md §4 does not define hex values for the 4 neutral steps; they are fixed once during token implementation and added here — no other colors may be introduced (AGENTS.MD).
+| Token | Value | Role | Contrast (measured) | Requirement |
+|---|---|---|---|---|
+| `--color-paper` | `#EFEBF7` | Lilac-mist background (+ faint white radial glow) | — | — |
+| `--color-surface` | `#FFFFFF` | Clay card — puffy white objects on the mist | — | — |
+| `--color-surface-2` | `#F6F3FC` | Inputs, chips, segmented tracks | — | — |
+| `--color-ink` | `#322E48` | Primary text (deep violet ink) | 11.1:1 on bg, 13.0:1 on card | ≥4.5:1 |
+| `--color-accent` | `#6D5AE0` | Juicy violet — the *only* accent (fills, rings, focus) | — | Fill only |
+| `--color-on-accent` | `#FFFFFF` | Text/icon on accent fills | 5.0:1 | ≥4.5:1 |
+| `--color-accent-text` | `#4A3EDB` | Accent as *text*/link on background | 6.0:1 | ≥4.5:1 |
+| `--color-der` | `#2B5CB8` | Gender: der (clay blue) | 6.3:1 on card | ≥4.5:1 |
+| `--color-die` | `#C22E63` | Gender: die (clay rose) | 5.4:1 on card | ≥4.5:1 |
+| `--color-das` | `#8F6C00` | Gender: das (clay gold) | 4.9:1 on card | ≥4.5:1 |
+| `--color-error` | `#B8402A` | Error feedback (clay coral); never neon red | 5.5:1 on card | ≥4.5:1 |
+| `--color-success` | `#257247` | Success feedback (leaf green) | 5.9:1 on card | ≥4.5:1 |
+| `--color-neutral-1…4` | `#E2DCF0` / `#CFC8E4` / `#69638A` / `#5B5578` | Dividers, borders, secondary text, disabled | 3: 4.8:1 · 4: 6.0:1 on bg | Any text use ≥4.5:1; non-text boundaries ≥3:1 (WCAG 2.2 SC 1.4.11) |
+
+Clay surface tokens (the style signature — double shadow per element):
+`--shadow-clay` / `--shadow-clay-raised` (outer soft drop, ink-tinted `rgba(50,46,72,…)`, + inset top-left highlight), `--shadow-clay-pressed` (inset, for active states), `--shadow-clay-input` (inset, recessed fields/tracks), `--shadow-focus`, `--shadow-banner`, `--gradient-backdrop` (faint white radial over `--color-paper`).
 
 Derived usage rules (specifications, not new tokens):
-- Primary button: `--color-accent` fill + `--color-paper` text = 4.7:1 — passes AA.
-- Gender color is **never the sole carrier**: article text + 4px card-edge ribbon always accompany it (§7.1).
+- Primary button: `--color-accent` fill + `--color-on-accent` text = 5.0:1 — passes AA.
+- Gender color is **never the sole carrier**: article text + card-edge ribbon always accompany it (§7.1).
 - Single light theme in MVP. No dark-mode palette exists in PLAN.md; do not invent one.
 
 ### 1.2 Type scale (modular 1.25, copied from PLAN.md §4)
@@ -51,9 +57,9 @@ Derived usage rules (specifications, not new tokens):
 | Token | Value | Notes |
 |---|---|---|
 | `--space-N` | 4px base grid (`--space-1` = 4px … `--space-16` = 64px) | Generous whitespace; all layout multiples of 4 |
-| `--radius-card` | 12px | Cards, chips (lower bound of PLAN range) |
-| `--radius-lg` | 16px | Sheets, large surfaces (upper bound) |
-| `--border-soft` | 1px solid, neutral step | Soft borders *instead of* heavy shadows |
+| `--radius-card` | 20px | Cards, chips — chunky clay rounding |
+| `--radius-lg` | 24px | Sheets, large surfaces |
+| `--border-soft` | 1px solid, neutral step | Rarely used; clay prefers double shadows over borders |
 | `--layout-max` | 640px | Single centered column |
 
 ### 1.4 Motion
@@ -76,16 +82,16 @@ CSS custom properties in `src/styles/tokens.css` (Vite import; cross-link 01). N
 
 ## 2. Typography assets
 
-| Asset | Family | Weights (max 2/family) | Role | License | Source |
+| Asset | Family | Weights (max 3/family) | Role | License | Source |
 |---|---|---|---|---|---|
 | Word display serif | **Source Serif 4** (Newsreader is the approved alternative per PLAN §4; exactly one ships) | 400, 600 | German lemma at `--text-39`, example sentences | SIL OFL 1.1 | Self-hosted |
-| UI sans | **Inter** | 400, 600 | All UI text, answer input | SIL OFL 1.1 | Self-hosted |
+| UI sans | **Nunito** (Claymorphism direction — rounded, friendly; replaced Inter 2026-09-16) | 400, 700, 800 | All UI text, answer input, wordmark | SIL OFL 1.1 | Self-hosted via `@fontsource/nunito` |
 
 Production rules:
 - Self-hosted only — no CDN/Google Fonts runtime request (offline-first constraint, PLAN §6).
-- Format: `.woff2`, subset with `pyftsubset` to latin + latin-ext, **explicitly including German glyphs `ä ö ü ß ẞ` (U+00E4, U+00F6, U+00FC, U+00DF, U+1E9E and capitals `Ä Ö Ü`)** — `ẞ` lives outside the default latin subset and must be added deliberately.
-- `@font-face` with `font-display: swap` per family/weight.
-- File layout: `src/assets/fonts/source-serif-4-400.woff2`, `source-serif-4-600.woff2`, `inter-400.woff2`, `inter-600.woff2` (+ OFL license text alongside).
+- Format: `.woff2`, latin + latin-ext subsets, **explicitly including German glyphs `ä ö ü ß ẞ` (U+00E4, U+00F6, U+00FC, U+00DF, U+1E9E and capitals `Ä Ö Ü`)** — `ẞ` lives in the latin-ext subset; presence in the shipped Nunito latin-ext file verified with fontTools.
+- `@font-face` with `font-display: swap` per family/weight/subset.
+- File layout: `src/assets/fonts/source-serif-4-{latin,latin-ext}.woff2`, `nunito-{latin,latin-ext}-{400,700,800}-normal.woff2` (+ OFL license text alongside).
 - Tooling (font download, subsetting): cross-link [02-environment-and-tooling.md](./02-environment-and-tooling.md).
 
 ---
@@ -136,8 +142,8 @@ Produced with the **canvas-design** skill (AGENTS.MD touchpoints: Phase 2 polish
 
 Design constraints:
 - **Name chosen: Wortgarten** (owner decision 2026-09-15): motif is a leaf / garden ring. No letterforms, no logotype in the icon itself.
-- Wordmark: "Wortgarten" set in the §2 serif at UI size; final lockup deferred to Phase 2 branding work.
-- Colors restricted to §1.1 tokens: paper background, moss accent, ink. No new brand colors.
+- Wordmark: "Wortgarten" set in Nunito 800 (rounded UI sans, Claymorphism direction) at UI size; final lockup deferred to Phase 2 branding work.
+- Colors restricted to §1.1 tokens: lilac-mist background, violet accent, deep-violet ink. No new brand colors.
 
 ---
 

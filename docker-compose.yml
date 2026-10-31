@@ -1,6 +1,6 @@
 services:
-  wortgarten:
+  web:
     build: .
     ports:
-      - "3080:80"
+      - "3010:80"
     restart: unless-stopped

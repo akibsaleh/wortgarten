@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-WORDS_JSON = ROOT / "public" / "words.json"
+WORDS_JSON = ROOT / "src" / "assets" / "words.json"
 VOICE_MODEL = ROOT / "scripts" / "voices" / "de_DE-thorsten-medium.onnx"
 AUDIO_DIR = ROOT / "public" / "audio"
 WORDS_DIR = AUDIO_DIR / "words"

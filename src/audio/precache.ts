@@ -8,7 +8,7 @@
  * Progress is pushed into the audio Zustand store so any React component
  * can react to it (e.g. show a progress bar or a TTS-fallback indicator).
  */
-import wordsData from '../../public/words.json';
+import wordsData from '../assets/words.json';
 import { useAudioStore } from './audioStore';
 
 export const AUDIO_CACHE_NAME = 'wortgarten-audio-v1';

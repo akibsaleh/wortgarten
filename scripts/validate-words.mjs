@@ -8,14 +8,41 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const WORDS_JSON = join(ROOT, 'public', 'words.json');
+const WORDS_JSON = join(ROOT, 'src', 'assets', 'words.json');
 
-const POS_ENUM = ['noun', 'verb', 'adj', 'adv', 'prep', 'conj', 'pron', 'num', 'part'];
+const POS_ENUM = [
+  'noun',
+  'verb',
+  'adj',
+  'adv',
+  'prep',
+  'conj',
+  'pron',
+  'num',
+  'part',
+];
 const CEFR_ENUM = ['A1', 'A2', 'B1'];
 const REQUIRED_FIELDS = [
-  'id', 'lemma', 'gender', 'plural', 'pos', 'gloss_en', 'example_de', 'example_en',
-  'case_note', 'separable', 'prefix', 'audio_word', 'audio_example', 'image_ref',
-  'theme', 'cefr', 'freq_rank', 'source',
+  'id',
+  'lemma',
+  'gender',
+  'plural',
+  'pos',
+  'gloss_en',
+  'example_de',
+  'example_en',
+  'case_note',
+  'separable',
+  'prefix',
+  'audio_word',
+  'audio_example',
+  'image_ref',
+  'theme',
+  'cefr',
+  'freq_rank',
+  'source',
+  'cloze_sentence',
+  'cloze_answer',
 ];
 const FORBIDDEN_STRINGS = ['Leipzig', 'SUBTUBLEX', 'SUBTLEX', 'Goethe'];
 
@@ -95,9 +122,16 @@ for (let i = 1; i <= 1000; i++) {
 // 7. Noun completeness: every noun must have gender+plural, OR be a recognized
 //    exception (Pluraliatantum, Singulariatantum, proper noun without article)
 const SINGULARIATANTUM_PATTERNS = [
-  'Singulariatantum', ' kein Plural', 'nur Sg.', 'meist Sg.',
-  'Markenname', 'Gerundium', 'Substantiviertes Verb', 'Anglizismus',
-  'Ländername mit Artikel', 'ohne Artikel',
+  'Singulariatantum',
+  ' kein Plural',
+  'nur Sg.',
+  'meist Sg.',
+  'Markenname',
+  'Gerundium',
+  'Substantiviertes Verb',
+  'Anglizismus',
+  'Ländername mit Artikel',
+  'ohne Artikel',
 ];
 const PLURALIATANTUM_PATTERNS = ['Pluraliatantum'];
 
@@ -109,14 +143,16 @@ function hasMainPlural(gk) {
 }
 
 function matchesAny(str, patterns) {
-  return patterns.some(p => str.includes(p));
+  return patterns.some((p) => str.includes(p));
 }
 
 for (const w of words) {
   if (w.pos !== 'noun') continue;
 
-  const isPluraliatantum = w.case_note && matchesAny(w.case_note, PLURALIATANTUM_PATTERNS);
-  const isSingulariatantum = w.case_note && matchesAny(w.case_note, SINGULARIATANTUM_PATTERNS);
+  const isPluraliatantum =
+    w.case_note && matchesAny(w.case_note, PLURALIATANTUM_PATTERNS);
+  const isSingulariatantum =
+    w.case_note && matchesAny(w.case_note, SINGULARIATANTUM_PATTERNS);
   const isProperNoun = w.case_note && w.case_note.includes('ohne Artikel');
 
   if (isPluraliatantum) {
@@ -150,10 +186,14 @@ for (const w of words) {
 for (const w of words) {
   if (w.pos === 'noun') continue;
   if (w.gender !== null) {
-    fail(`#${w.freq_rank} ${w.id}: non-noun should have gender null, got "${w.gender}"`);
+    fail(
+      `#${w.freq_rank} ${w.id}: non-noun should have gender null, got "${w.gender}"`,
+    );
   }
   if (w.plural !== null) {
-    fail(`#${w.freq_rank} ${w.id}: non-noun should have plural null, got "${w.plural}"`);
+    fail(
+      `#${w.freq_rank} ${w.id}: non-noun should have plural null, got "${w.plural}"`,
+    );
   }
 }
 
@@ -172,13 +212,26 @@ for (const w of words) {
   const lemmaLower = w.lemma.toLowerCase().replace(/[()!?,.\s-]/g, '');
   const exampleLower = w.example_de.toLowerCase().replace(/[()!?,.\s-]/g, '');
   // Also check without umlaut normalization
-  const lemmaNormalized = lemmaLower.replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 's');
-  const exampleNormalized = exampleLower.replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 's');
+  const lemmaNormalized = lemmaLower
+    .replace(/ä/g, 'a')
+    .replace(/ö/g, 'o')
+    .replace(/ü/g, 'u')
+    .replace(/ß/g, 's');
+  const exampleNormalized = exampleLower
+    .replace(/ä/g, 'a')
+    .replace(/ö/g, 'o')
+    .replace(/ü/g, 'u')
+    .replace(/ß/g, 's');
 
   if (!exampleNormalized.includes(lemmaNormalized)) {
     // Try matching just the first 4 chars of the lemma (for inflected forms)
-    if (lemmaNormalized.length > 4 && !exampleNormalized.includes(lemmaNormalized.slice(0, 4))) {
-      warn(`#${w.freq_rank} ${w.id}: example may not contain lemma "${w.lemma}" in "${w.example_de}"`);
+    if (
+      lemmaNormalized.length > 4 &&
+      !exampleNormalized.includes(lemmaNormalized.slice(0, 4))
+    ) {
+      warn(
+        `#${w.freq_rank} ${w.id}: example may not contain lemma "${w.lemma}" in "${w.example_de}"`,
+      );
     }
   }
 }
@@ -196,10 +249,14 @@ for (const w of words) {
 // 12. Audio paths follow convention
 for (const w of words) {
   if (w.audio_word !== `audio/${w.id}.ogg`) {
-    fail(`#${w.freq_rank} ${w.id}: audio_word "${w.audio_word}" doesn't match id`);
+    fail(
+      `#${w.freq_rank} ${w.id}: audio_word "${w.audio_word}" doesn't match id`,
+    );
   }
   if (w.audio_example !== `audio/${w.id}.example.ogg`) {
-    fail(`#${w.freq_rank} ${w.id}: audio_example "${w.audio_example}" doesn't match id`);
+    fail(
+      `#${w.freq_rank} ${w.id}: audio_example "${w.audio_example}" doesn't match id`,
+    );
   }
 }
 
@@ -213,6 +270,28 @@ for (const w of words) {
   }
 }
 
+// 14. Cloze integrity: when present, the blank must reconstruct example_de exactly
+let clozeCount = 0;
+for (const w of words) {
+  if (w.cloze_sentence == null && w.cloze_answer == null) continue;
+  clozeCount++;
+  if (
+    typeof w.cloze_sentence !== 'string' ||
+    !w.cloze_sentence.includes('_____')
+  ) {
+    fail(`#${w.freq_rank} ${w.id}: cloze_sentence must contain "_____"`);
+    continue;
+  }
+  if (typeof w.cloze_answer !== 'string' || w.cloze_answer.length === 0) {
+    fail(`#${w.freq_rank} ${w.id}: cloze_answer missing`);
+    continue;
+  }
+  if (w.cloze_sentence.replace('_____', w.cloze_answer) !== w.example_de) {
+    fail(`#${w.freq_rank} ${w.id}: cloze fill does not reconstruct example_de`);
+  }
+}
+console.log(`Cloze-eligible: ${clozeCount} / ${words.length}`);
+
 // ---------------------------------------------------------------------------
 console.log('');
 console.log(`Themes: ${themes.size} distinct values`);
@@ -222,7 +301,9 @@ if (themes.size > 35) {
 
 console.log('');
 if (failures === 0) {
-  console.log(`PASS — ${words.length} entries validated, ${warnings} warnings.`);
+  console.log(
+    `PASS — ${words.length} entries validated, ${warnings} warnings.`,
+  );
   process.exit(0);
 } else {
   console.error(`FAIL — ${failures} failure(s), ${warnings} warnings.`);

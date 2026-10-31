@@ -6,7 +6,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Word, Card, Settings } from '../src/db/schema';
 
 // ─── 1. Grading Logic ──────────────────────────────────────────────────────────
-import { grade, paceFromMs, gradeToRating } from '../src/scheduler/grading';
+import {
+  grade,
+  gradeCloze,
+  paceFromMs,
+  gradeToRating,
+} from '../src/scheduler/grading';
 
 // Helper to build a minimal Word object
 function makeWord(overrides: Partial<Word>): Word {
@@ -29,6 +34,8 @@ function makeWord(overrides: Partial<Word>): Word {
     cefr: 'A1',
     freq_rank: 999,
     source: [],
+    cloze_sentence: null,
+    cloze_answer: null,
     ...overrides,
   };
 }
@@ -36,7 +43,12 @@ function makeWord(overrides: Partial<Word>): Word {
 describe('Grading Logic', () => {
   describe('grade() — exact match → correct', () => {
     it('grades exact match for a noun (article + lemma)', () => {
-      const word = makeWord({ id: 'buch', lemma: 'Buch', gender: 'das', pos: 'noun' });
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        gender: 'das',
+        pos: 'noun',
+      });
       const result = grade({ answer: 'das Buch', word });
       expect(result.grade).toBe('correct');
       expect(result.correctForm).toBe('das Buch');
@@ -60,7 +72,12 @@ describe('Grading Logic', () => {
 
   describe('grade() — Levenshtein distance 1 → typo', () => {
     it('grades typo in noun lemma as typo (correct article)', () => {
-      const word = makeWord({ id: 'buch', lemma: 'Buch', gender: 'das', pos: 'noun' });
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        gender: 'das',
+        pos: 'noun',
+      });
       // "das Buc" — one deletion away from "Buch" (Levenshtein distance 1)
       const result = grade({ answer: 'das Buc', word });
       expect(result.grade).toBe('typo');
@@ -86,7 +103,12 @@ describe('Grading Logic', () => {
 
   describe('grade() — wrong article → wrong', () => {
     it('grades wrong article on noun as wrong', () => {
-      const word = makeWord({ id: 'buch', lemma: 'Buch', gender: 'das', pos: 'noun' });
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        gender: 'das',
+        pos: 'noun',
+      });
       const result = grade({ answer: 'der Buch', word });
       expect(result.grade).toBe('wrong');
       expect(result.correctForm).toBe('das Buch');
@@ -94,7 +116,12 @@ describe('Grading Logic', () => {
     });
 
     it('grades der instead of die as wrong', () => {
-      const word = makeWord({ id: 'frau', lemma: 'Frau', gender: 'die', pos: 'noun' });
+      const word = makeWord({
+        id: 'frau',
+        lemma: 'Frau',
+        gender: 'die',
+        pos: 'noun',
+      });
       const result = grade({ answer: 'der Frau', word });
       expect(result.grade).toBe('wrong');
       expect(result.article).toBe('die');
@@ -103,7 +130,12 @@ describe('Grading Logic', () => {
 
   describe('grade() — missing article on noun → wrong', () => {
     it('grades noun answer missing article as wrong', () => {
-      const word = makeWord({ id: 'buch', lemma: 'Buch', gender: 'das', pos: 'noun' });
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        gender: 'das',
+        pos: 'noun',
+      });
       const result = grade({ answer: 'Buch', word });
       expect(result.grade).toBe('wrong');
       expect(result.correctForm).toBe('das Buch');
@@ -113,25 +145,45 @@ describe('Grading Logic', () => {
 
   describe('grade() — umlaut fallback (ae→ä, oe→ö, ue→ü, ss→ß)', () => {
     it('accepts "ae" as "ä" for non-noun', () => {
-      const word = makeWord({ id: 'tae', lemma: 'Tänzer', pos: 'noun', gender: 'der' });
+      const word = makeWord({
+        id: 'tae',
+        lemma: 'Tänzer',
+        pos: 'noun',
+        gender: 'der',
+      });
       const result = grade({ answer: 'der Taenzer', word });
       expect(result.grade).toBe('correct');
     });
 
     it('accepts "oe" as "ö" for non-noun', () => {
-      const word = makeWord({ id: 'o', lemma: 'ö', pos: 'noun', gender: 'das' });
+      const word = makeWord({
+        id: 'o',
+        lemma: 'ö',
+        pos: 'noun',
+        gender: 'das',
+      });
       const result = grade({ answer: 'das oe', word });
       expect(result.grade).toBe('correct');
     });
 
     it('accepts "ue" as "ü" for noun with article', () => {
-      const word = makeWord({ id: 'uebersetzer', lemma: 'Übersetzer', pos: 'noun', gender: 'der' });
+      const word = makeWord({
+        id: 'uebersetzer',
+        lemma: 'Übersetzer',
+        pos: 'noun',
+        gender: 'der',
+      });
       const result = grade({ answer: 'der Uebersetzer', word });
       expect(result.grade).toBe('correct');
     });
 
     it('accepts "ss" as "ß" for noun with article', () => {
-      const word = makeWord({ id: 'strasse', lemma: 'Straße', pos: 'noun', gender: 'die' });
+      const word = makeWord({
+        id: 'strasse',
+        lemma: 'Straße',
+        pos: 'noun',
+        gender: 'die',
+      });
       const result = grade({ answer: 'die Strasse', word });
       expect(result.grade).toBe('correct');
     });
@@ -152,7 +204,12 @@ describe('Grading Logic', () => {
 
   describe('grade() — case insensitivity', () => {
     it('grades case-insensitive match for noun as correct', () => {
-      const word = makeWord({ id: 'buch', lemma: 'Buch', gender: 'das', pos: 'noun' });
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        gender: 'das',
+        pos: 'noun',
+      });
       const result = grade({ answer: 'DAS buch', word });
       expect(result.grade).toBe('correct');
     });
@@ -215,18 +272,100 @@ describe('Grading Logic', () => {
       expect(gradeToRating('correct', 'normal')).toBe('good');
     });
   });
+
+  describe('gradeCloze()', () => {
+    // Per the pipeline, cloze_answer is the lemma's exact surface form as it
+    // appeared in the sentence (may differ only by case, e.g. sentence start).
+    it('accepts the blanked noun without an article (unlike production grading)', () => {
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        gender: 'das',
+        pos: 'noun',
+        cloze_sentence: 'Das _____ liegt auf dem Tisch.',
+        cloze_answer: 'Buch',
+      });
+      const result = gradeCloze({ answer: 'Buch', word });
+      expect(result.grade).toBe('correct');
+      expect(result.correctForm).toBe('Buch');
+      expect(result.article).toBeNull();
+    });
+
+    it('grades case-insensitively', () => {
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        pos: 'noun',
+        gender: 'das',
+        cloze_sentence: 'Das _____ liegt hier.',
+        cloze_answer: 'Buch',
+      });
+      expect(gradeCloze({ answer: 'buch', word }).grade).toBe('correct');
+    });
+
+    it('grades Levenshtein ≤ 1 as typo', () => {
+      const word = makeWord({
+        id: 'buch',
+        lemma: 'Buch',
+        pos: 'noun',
+        gender: 'das',
+        cloze_sentence: 'Das _____ liegt hier.',
+        cloze_answer: 'Buch',
+      });
+      expect(gradeCloze({ answer: 'Buc', word }).grade).toBe('typo');
+    });
+
+    it('accepts umlaut fallbacks', () => {
+      const word = makeWord({
+        id: 'strasse',
+        lemma: 'Straße',
+        pos: 'noun',
+        gender: 'die',
+        cloze_sentence: 'Die _____ ist breit.',
+        cloze_answer: 'Straße',
+      });
+      expect(gradeCloze({ answer: 'Strasse', word }).grade).toBe('correct');
+    });
+
+    it('grades unrelated answers as wrong', () => {
+      const word = makeWord({
+        id: 'gehen',
+        lemma: 'gehen',
+        pos: 'verb',
+        cloze_sentence: 'Er will nach Hause _____.',
+        cloze_answer: 'gehen',
+      });
+      const result = gradeCloze({ answer: 'laufen', word });
+      expect(result.grade).toBe('wrong');
+      expect(result.correctForm).toBe('gehen');
+    });
+
+    it('falls back to the lemma when cloze_answer is null', () => {
+      const word = makeWord({ id: 'gehen', lemma: 'gehen', pos: 'verb' });
+      expect(gradeCloze({ answer: 'gehen', word }).grade).toBe('correct');
+    });
+  });
 });
 
 // ─── 2. Session Composition ─────────────────────────────────────────────────────
 // These tests need the real Dexie db, so we set up the database in each test.
 
 import { db } from '../src/db/schema';
-import { composeSession } from '../src/session/compose';
+import {
+  composeSession,
+  assignCardTypes,
+  type SessionCard,
+} from '../src/session/compose';
 
 /** Seed helper: insert a word + optionally make it due for review. */
 async function seedWord(
   word: Word,
-  opts: { due?: Date; state?: number; reps?: number } = {},
+  opts: {
+    due?: Date;
+    state?: number;
+    reps?: number;
+    introducedAt?: Date | null;
+  } = {},
 ) {
   await db.words.put(word);
 
@@ -235,6 +374,7 @@ async function seedWord(
 
   const now = new Date();
   const due = opts.due ?? now;
+  const introducedAt = opts.introducedAt ?? null;
 
   await db.cards.put({
     id: recId,
@@ -249,6 +389,7 @@ async function seedWord(
     lapses: 0,
     state: opts.state ?? 0,
     last_review: null,
+    introduced_at: introducedAt,
   });
   await db.cards.put({
     id: prodId,
@@ -263,6 +404,7 @@ async function seedWord(
     lapses: 0,
     state: opts.state ?? 0,
     last_review: null,
+    introduced_at: introducedAt,
   });
 }
 
@@ -470,11 +612,187 @@ describe('Session Composition', () => {
 
     expect(session.length).toBeLessThanOrEqual(7);
   });
+
+  it("new words enter via intro; the word's second card is recognition", async () => {
+    const w = makeWord({
+      id: 'intro1',
+      lemma: 'schauen',
+      pos: 'verb',
+      theme: 'essentials',
+    });
+    await seedWord(w, { state: 0 });
+
+    const session = await composeSession({
+      reviewCap: 60,
+      newPerDay: 10,
+      targetMinutes: 10,
+    });
+    const mine = session.filter((s) => s.word.id === 'intro1');
+    expect(mine.length).toBe(2); // rec + prod cards
+    expect(mine[0]!.cardType).toBe('intro');
+    expect(mine[1]!.cardType).toBe('recognition');
+  });
+
+  it('new cards with due=now are not duplicated as reviews', async () => {
+    const w = makeWord({
+      id: 'dup1',
+      lemma: 'laufen',
+      pos: 'verb',
+      theme: 'essentials',
+    });
+    await seedWord(w, { state: 0, due: new Date() });
+
+    const session = await composeSession({
+      reviewCap: 60,
+      newPerDay: 10,
+      targetMinutes: 10,
+    });
+    const ids = session.map((s) => s.card.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(
+      session.filter((s) => s.word.id === 'dup1' && s.kind === 'review').length,
+    ).toBe(0);
+  });
+});
+
+// ─── 2b. assignCardTypes() — first-exposure gate & cloze eligibility ────────────
+
+function makeCardForWord(wordId: string, overrides: Partial<Card> = {}): Card {
+  return {
+    id: `${wordId}.rec`,
+    wordId,
+    type: 'recognition',
+    due: new Date(),
+    stability: 0,
+    difficulty: 0,
+    elapsed_days: 0,
+    scheduled_days: 0,
+    reps: 0,
+    lapses: 0,
+    state: 0,
+    last_review: null,
+    introduced_at: null,
+    ...overrides,
+  };
+}
+
+function makeSessionCard(word: Word, card: Card): SessionCard {
+  return {
+    card,
+    word,
+    kind: card.reps === 0 && !card.introduced_at ? 'new' : 'review',
+    cardType: 'recognition',
+  };
+}
+
+/** Place the target card at queue position idx (position feeds the type seed). */
+function atIndex(sc: SessionCard, idx: number): SessionCard[] {
+  const pads = Array.from({ length: idx }, (_, i) => {
+    const w = makeWord({ id: `pad-${idx}-${i}` });
+    return makeSessionCard(
+      w,
+      makeCardForWord(w.id, { reps: 5, state: 2, introduced_at: new Date() }),
+    );
+  });
+  return [...pads, sc];
+}
+
+describe('assignCardTypes() — first-exposure gate', () => {
+  it('first card of an unseen word is intro, second is recognition', () => {
+    const word = makeWord({ id: 'neu1', lemma: 'schauen', pos: 'verb' });
+    const rec = makeCardForWord('neu1');
+    const prod = makeCardForWord('neu1', {
+      id: 'neu1.prod',
+      type: 'production',
+    });
+    const result = assignCardTypes([
+      makeSessionCard(word, rec),
+      makeSessionCard(word, prod),
+    ]);
+    expect(result[0]!.cardType).toBe('intro');
+    expect(result[1]!.cardType).toBe('recognition');
+  });
+
+  it('an introduced word with reps ≥ 2 never gets intro', () => {
+    const word = makeWord({ id: 'alt1', lemma: 'laufen', pos: 'verb' });
+    const card = makeCardForWord('alt1', {
+      reps: 5,
+      state: 2,
+      introduced_at: new Date(),
+    });
+    for (let idx = 0; idx < 15; idx++) {
+      const result = assignCardTypes(atIndex(makeSessionCard(word, card), idx));
+      expect(result[idx]!.cardType).not.toBe('intro');
+    }
+  });
+
+  it('an introduced word with reps < 2 stays on recognition', () => {
+    const word = makeWord({ id: 'jung1', lemma: 'gehen', pos: 'verb' });
+    const card = makeCardForWord('jung1', {
+      reps: 1,
+      state: 1,
+      introduced_at: new Date(),
+    });
+    for (let idx = 0; idx < 15; idx++) {
+      const result = assignCardTypes(atIndex(makeSessionCard(word, card), idx));
+      expect(result[idx]!.cardType).toBe('recognition');
+    }
+  });
+});
+
+describe('assignCardTypes() — cloze eligibility', () => {
+  it('a word without pipeline cloze data never receives cloze', () => {
+    // Separable verb: lemma never appears verbatim → cloze_sentence null
+    const word = makeWord({
+      id: 'nocloze',
+      lemma: 'abbiegen',
+      pos: 'verb',
+      audio_word: '',
+    });
+    const card = makeCardForWord('nocloze', {
+      reps: 5,
+      state: 2,
+      introduced_at: new Date(),
+    });
+    for (let idx = 0; idx < 25; idx++) {
+      const result = assignCardTypes(atIndex(makeSessionCard(word, card), idx));
+      expect(result[idx]!.cardType).not.toBe('cloze');
+    }
+  });
+
+  it('a word with cloze data receives cloze at some positions, carrying the pipeline sentence', () => {
+    const word = makeWord({
+      id: 'buch',
+      lemma: 'Buch',
+      pos: 'noun',
+      gender: 'das',
+      audio_word: '', // no-audio branch: seed ≥ 0.85 → cloze
+      example_de: 'Das Buch liegt auf dem Tisch.',
+      cloze_sentence: 'Das _____ liegt auf dem Tisch.',
+      cloze_answer: 'Buch',
+    });
+    const card = makeCardForWord('buch', {
+      reps: 5,
+      state: 2,
+      introduced_at: new Date(),
+    });
+    let sawCloze = false;
+    for (let idx = 0; idx < 100; idx++) {
+      const got = assignCardTypes(atIndex(makeSessionCard(word, card), idx))[
+        idx
+      ]!;
+      if (got.cardType === 'cloze') {
+        sawCloze = true;
+        expect(got.clozeText).toBe('Das _____ liegt auf dem Tisch.');
+      }
+    }
+    expect(sawCloze).toBe(true);
+  });
 });
 
 // ─── 3. Idempotent Import ───────────────────────────────────────────────────────
 import { importWords } from '../src/db/import';
-import wordsData from '../public/words.json';
+import wordsData from '../src/assets/words.json';
 
 describe('Idempotent Import', () => {
   beforeEach(async () => {
@@ -621,12 +939,17 @@ describe('Scheduler', () => {
         lapses: 0,
         state: 0, // New
         last_review: null,
+        introduced_at: null,
       };
       await db.cards.put(card);
 
       // Rate the card
       const elapsedMs = 3000;
-      const { card: updated, log } = await rateCard('test.rec', Rating.Good, elapsedMs);
+      const { card: updated, log } = await rateCard(
+        'test.rec',
+        Rating.Good,
+        elapsedMs,
+      );
 
       // Card should be updated
       expect(updated.id).toBe('test.rec');
@@ -635,7 +958,10 @@ describe('Scheduler', () => {
       expect(updated.state).not.toBe(0); // Should have moved from New
 
       // Review log should be persisted
-      const logs = await db.reviewLogs.where('cardId').equals('test.rec').toArray();
+      const logs = await db.reviewLogs
+        .where('cardId')
+        .equals('test.rec')
+        .toArray();
       expect(logs.length).toBe(1);
       expect(logs[0]!.rating).toBe(Rating.Good);
       expect(logs[0]!.elapsed_ms).toBe(elapsedMs);
@@ -661,6 +987,7 @@ describe('Scheduler', () => {
         lapses: 0,
         state: 0,
         last_review: null,
+        introduced_at: null,
       };
       await db.cards.put(card);
 
@@ -670,7 +997,10 @@ describe('Scheduler', () => {
       // Second review
       await rateCard('multi.rec', Rating.Easy, 1500);
 
-      const logs = await db.reviewLogs.where('cardId').equals('multi.rec').toArray();
+      const logs = await db.reviewLogs
+        .where('cardId')
+        .equals('multi.rec')
+        .toArray();
       expect(logs.length).toBe(2);
 
       const cardAfter = await db.cards.get('multi.rec');

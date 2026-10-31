@@ -9,9 +9,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const SOURCE = join(ROOT, 'top-1000-german-words.md');
-const OUT = join(ROOT, 'public', 'words.json');
+const OUT = join(ROOT, 'src', 'assets', 'words.json');
 
-const DATA_VERSION = '2026-09-15-1';
+const DATA_VERSION = '2026-09-16-1';
 
 // ---------------------------------------------------------------------------
 // Theme mapping (Themenfeld → slug). ~30 units per PLAN.md §2.
@@ -42,7 +42,10 @@ const THEME_MAP = {
 function slugify(str) {
   return str
     .toLowerCase()
-    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/[\s-]+/g, '-')
     .replace(/^-|-$/g, '');
@@ -68,6 +71,29 @@ function applyUmlaut(word) {
     }
   }
   return word;
+}
+
+/**
+ * Pre-compute cloze data: blank the lemma's exact surface form in example_de.
+ * Deterministic, case-insensitive, unicode-aware word boundary (\b fails for
+ * lemmas starting with umlauts, e.g. "Österreich"). Returns nulls when the
+ * lemma doesn't appear verbatim (separable verbs, inflected-only forms) —
+ * such words never get cloze cards.
+ */
+function computeCloze(exampleDe, lemma) {
+  const EMPTY = { cloze_sentence: null, cloze_answer: null };
+  if (!exampleDe || !lemma) return EMPTY;
+  const escaped = lemma.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(
+    `(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`,
+    'iu',
+  );
+  const m = exampleDe.match(re);
+  if (!m) return EMPTY;
+  return {
+    cloze_sentence: exampleDe.replace(re, '_____'),
+    cloze_answer: m[0], // the exact surface form that appeared in the sentence
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -204,9 +230,31 @@ function computePlural(lemma, notation) {
 // ---------------------------------------------------------------------------
 
 const SEPARABLE_PREFIXES = [
-  'ab', 'an', 'auf', 'aus', 'bei', 'da', 'durch', 'ein', 'fest', 'fort',
-  'her', 'hin', 'los', 'mit', 'nach', 'vor', 'weg', 'weiter', 'zu',
-  'zurück', 'zusammen', 'heim', 'hoch', 'nieder', 'wieder',
+  'ab',
+  'an',
+  'auf',
+  'aus',
+  'bei',
+  'da',
+  'durch',
+  'ein',
+  'fest',
+  'fort',
+  'her',
+  'hin',
+  'los',
+  'mit',
+  'nach',
+  'vor',
+  'weg',
+  'weiter',
+  'zu',
+  'zurück',
+  'zusammen',
+  'heim',
+  'hoch',
+  'nieder',
+  'wieder',
   'kennen', // sich kennenlernen — compound separable
 ];
 
@@ -215,7 +263,7 @@ function parseVerb(headword, grammatik) {
   const gk = grammatik.trim();
 
   // Split principal parts: "infinitive, praeteritum, perfekt"
-  const parts = hw.split(',').map(p => p.trim());
+  const parts = hw.split(',').map((p) => p.trim());
   const infinitive = parts[0];
 
   const separable = /trennb\./.test(gk) && !/untrennb\./.test(gk);
@@ -289,7 +337,10 @@ function parseTable(content) {
     if (!trimmed.startsWith('|')) continue;
     if (trimmed.startsWith('|---') || trimmed.startsWith('| #')) continue;
 
-    const cells = trimmed.split('|').slice(1, -1).map(c => c.trim());
+    const cells = trimmed
+      .split('|')
+      .slice(1, -1)
+      .map((c) => c.trim());
     if (cells.length < 8) continue;
 
     const rank = parseInt(cells[0], 10);
@@ -319,13 +370,19 @@ function transform(rows) {
   const errors = [];
 
   // First pass: compute base slugs and detect collisions
-  const baseSlugs = rows.map(row => {
-    const rawHead = row.german.split(',')[0].replace(/!|\?/g, '').replace(/\s*\(Pl\.\)\s*$/, '').trim();
+  const baseSlugs = rows.map((row) => {
+    const rawHead = row.german
+      .split(',')[0]
+      .replace(/!|\?/g, '')
+      .replace(/\s*\(Pl\.\)\s*$/, '')
+      .trim();
     return slugify(stripArticle(rawHead));
   });
 
   const slugCounts = {};
-  baseSlugs.forEach(s => { slugCounts[s] = (slugCounts[s] || 0) + 1; });
+  baseSlugs.forEach((s) => {
+    slugCounts[s] = (slugCounts[s] || 0) + 1;
+  });
 
   // Track usage count for disambiguation
   const slugUsed = {};
@@ -346,7 +403,11 @@ function transform(rows) {
 
       const theme = THEME_MAP[row.themenfeld] || slugify(row.themenfeld);
 
-      const rawLemma = row.german.split(',')[0].replace(/!|\?/g, '').replace(/\s*\(Pl\.\)\s*$/, '').trim();
+      const rawLemma = row.german
+        .split(',')[0]
+        .replace(/!|\?/g, '')
+        .replace(/\s*\(Pl\.\)\s*$/, '')
+        .trim();
 
       let entry = {
         id: slug,
@@ -381,6 +442,9 @@ function transform(rows) {
         entry.prefix = verb.prefix;
       }
 
+      // Cloze must come last — the noun/verb branches above rewrite the lemma
+      Object.assign(entry, computeCloze(entry.example_de, entry.lemma));
+
       words.push(entry);
     } catch (e) {
       errors.push({ rank: row.freq_rank, error: e.message });
@@ -408,12 +472,12 @@ const output = { dataVersion: DATA_VERSION, words };
 writeFileSync(OUT, JSON.stringify(output, null, 2));
 
 console.log(`Parsed ${words.length} entries → ${OUT}`);
-console.log(`  nouns: ${words.filter(w => w.pos === 'noun').length}`);
-console.log(`  verbs: ${words.filter(w => w.pos === 'verb').length}`);
-console.log(`  adj:   ${words.filter(w => w.pos === 'adj').length}`);
-console.log(`  adv:   ${words.filter(w => w.pos === 'adv').length}`);
-console.log(`  prep:  ${words.filter(w => w.pos === 'prep').length}`);
-console.log(`  conj:  ${words.filter(w => w.pos === 'conj').length}`);
-console.log(`  pron:  ${words.filter(w => w.pos === 'pron').length}`);
-console.log(`  num:   ${words.filter(w => w.pos === 'num').length}`);
-console.log(`  part:  ${words.filter(w => w.pos === 'part').length}`);
+console.log(`  nouns: ${words.filter((w) => w.pos === 'noun').length}`);
+console.log(`  verbs: ${words.filter((w) => w.pos === 'verb').length}`);
+console.log(`  adj:   ${words.filter((w) => w.pos === 'adj').length}`);
+console.log(`  adv:   ${words.filter((w) => w.pos === 'adv').length}`);
+console.log(`  prep:  ${words.filter((w) => w.pos === 'prep').length}`);
+console.log(`  conj:  ${words.filter((w) => w.pos === 'conj').length}`);
+console.log(`  pron:  ${words.filter((w) => w.pos === 'pron').length}`);
+console.log(`  num:   ${words.filter((w) => w.pos === 'num').length}`);
+console.log(`  part:  ${words.filter((w) => w.pos === 'part').length}`);

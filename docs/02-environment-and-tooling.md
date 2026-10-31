@@ -39,7 +39,6 @@ No `package.json` exists yet. Scaffolding (Phase 0/1 boundary) **must** produce 
 ├── .prettierrc.json
 ├── index.html                   # Vite entry
 ├── public/
-│   ├── words.json               # seed deck, versioned via dataVersion (Phase 0 output, §6)
 │   ├── audio/                   # ~2,000 generated .ogg (Phase 0 output, §6)
 │   │   ├── words/<id>.ogg
 │   │   └── examples/<id>.ogg
@@ -51,6 +50,7 @@ No `package.json` exists yet. Scaffolding (Phase 0/1 boundary) **must** produce 
 │   └── curation/                # Leipzig / SUBTLEX-DE / Goethe QA data — GITIGNORED, never shipped
 ├── src/
 │   ├── main.tsx · App.tsx · vite-env.d.ts
+│   ├── assets/                  # words.json (seed deck, versioned via dataVersion, Phase 0 output) + fonts
 │   ├── db/                      # Dexie schema, words.json seed import (idempotent, dataVersion-gated)
 │   ├── scheduler/               # ts-fsrs integration — no custom scheduling code
 │   ├── session/                 # session composition (due-first, interleaved new blocks)
@@ -115,7 +115,7 @@ These ten scripts are the whole interface to the project — automation and docs
 | `test:e2e` | `playwright test` — E2E incl. the offline gate (details: [03-testing-strategy.md](./03-testing-strategy.md)) |
 | `lint` | `eslint .` — zero-warning policy |
 | `format` | `prettier --write .` |
-| `validate:content` | `node scripts/validate-words.mjs` — ajv schema check + PLAN.md §7 quality gates against `public/words.json` (every noun has gender+plural; example contains the lemma; audio file present for every entry) |
+| `validate:content` | `node scripts/validate-words.mjs` — ajv schema check + PLAN.md §7 quality gates against `src/assets/words.json` (every noun has gender+plural; example contains the lemma; audio file present for every entry) |
 | `generate:audio` | `bash scripts/generate-audio.sh` — activates `scripts/.venv`, runs Piper over `words.json`, writes `public/audio/**` (idempotent: skips files that already exist unless `--force`) |
 
 ## 5. Code quality tooling
@@ -163,7 +163,7 @@ Prettier owns all formatting; ESLint owns code quality + a11y. They never fight 
 
 ## 6. Phase 0 content pipeline tooling
 
-Runs **outside** the Node app; only its *outputs* enter the repo (`public/words.json`, `public/audio/**`).
+Runs **outside** the Node app; only its *outputs* enter the repo (`src/assets/words.json`, `public/audio/**`).
 
 - **Python 3.12 venv** (pinned — Piper publishes macOS arm64 wheels for 3.10–3.12; 3.13 currently requires source builds):
   ```bash
@@ -174,7 +174,7 @@ Runs **outside** the Node app; only its *outputs* enter the repo (`public/words.
 - **Voice model:** one German voice (`de_DE-*-high.onnx` + `.onnx.json`) downloaded into `scripts/voices/` (gitignored — large binaries; document the exact URL/checksum in `scripts/README.md`). License of the voice recorded for the attribution page.
 - **Enrichment inputs:** the knowledge source `top-1000-german-words.md` is committed (owner decision 2026-09-15 — parsed deterministically into `words.json`, **no LLM in the pipeline**); Leipzig/SUBTLEX-DE/Goethe QA files and the hermitdave fallback spine go to gitignored `scripts/curation/` and are **never committed or shipped** (PLAN.md §7).
 - **Validation:** `npm run validate:content` is the gate — zero schema violations before Phase 0 exit (all §7 quality gates, incl. audio-present-per-entry).
-- **Outputs:** `public/words.json` (~400KB, 1,000 entries, top-level `dataVersion`) and `public/audio/words/<id>.ogg` + `public/audio/examples/<id>.ogg` (~30–50MB total). Paths must match the `audio_word` / `audio_example` fields in `words.json` — the validator enforces this.
+- **Outputs:** `src/assets/words.json` (~400KB, 1,000 entries, top-level `dataVersion`; imported into the bundle — Vite forbids importing from `public/`) and `public/audio/words/<id>.ogg` + `public/audio/examples/<id>.ogg` (~30–50MB total). Paths must match the `audio_word` / `audio_example` fields in `words.json` — the validator enforces this.
 - Audio files are committed to the repo (they are build *inputs* to the Docker image, not build artifacts of it — regeneration requires Python, so the owner machine only needs Docker to deploy).
 
 ## 7. Docker & deployment

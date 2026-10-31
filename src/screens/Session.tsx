@@ -4,11 +4,12 @@ import { useSessionStore } from '../store/session';
 import { SpeakerIcon } from '../components/SpeakerIcon';
 import {
   grade,
+  gradeCloze,
   gradeRecognition,
   gradeToRating,
   paceFromMs,
 } from '../scheduler/grading';
-import { rateCard } from '../scheduler/index';
+import { markWordIntroduced, rateCard } from '../scheduler/index';
 import { Rating } from 'ts-fsrs';
 import { useAudio } from '../audio/useAudio';
 
@@ -32,6 +33,7 @@ export function Session() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const nextBtnRef = useRef<HTMLButtonElement>(null);
+  const gotItBtnRef = useRef<HTMLButtonElement>(null);
   const flipTimeRef = useRef<number>(0);
   const answerTimeRef = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -44,6 +46,11 @@ export function Session() {
 
   const current = queue[currentIndex];
   const cardType = current?.cardType ?? 'production';
+  const isCloze = cardType === 'cloze';
+  const isIntro = cardType === 'intro';
+  // Cloze and intro cards never flip: flipping a cloze card would reveal the
+  // answer before submission, and an intro card has nothing to recall yet.
+  const noFlip = isCloze || isIntro;
 
   // Both card faces stay mounted for the flip, so the face turned away
   // must be inert: backface-visibility hides pixels but leaves the
@@ -54,12 +61,23 @@ export function Session() {
     if (backFaceRef.current) backFaceRef.current.inert = !flipped;
   }, [flipped]);
 
-  // Auto-focus input when flipped
+  // Auto-focus input when flipped. Cloze cards never flip — focus on arrival.
   useEffect(() => {
-    if (flipped && inputRef.current && !grading) {
+    if ((flipped || isCloze) && inputRef.current && !grading) {
       inputRef.current.focus();
     }
-  }, [flipped, grading]);
+  }, [flipped, grading, isCloze, currentIndex]);
+
+  // No-flip cards have no flip moment to start the pace timer — start it
+  // when the card appears instead, or every answer would grade "slow".
+  useEffect(() => {
+    if (noFlip) flipTimeRef.current = Date.now();
+  }, [currentIndex, noFlip]);
+
+  // Focus the primary action on intro cards
+  useEffect(() => {
+    if (isIntro && !grading) gotItBtnRef.current?.focus();
+  }, [isIntro, grading, currentIndex]);
 
   // Focus Next button after grading
   useEffect(() => {
@@ -109,7 +127,9 @@ export function Session() {
     const isRecognition = cardType === 'recognition';
     const result = isRecognition
       ? gradeRecognition({ answer, word: current.word })
-      : grade({ answer, word: current.word });
+      : isCloze
+        ? gradeCloze({ answer, word: current.word })
+        : grade({ answer, word: current.word });
 
     const pace = paceFromMs(elapsed);
     const outcome = gradeToRating(result.grade, pace);
@@ -124,7 +144,22 @@ export function Session() {
       easy: Rating.Easy,
     };
     rateCard(current.card.id, ratingMap[outcome]!, elapsed);
-  }, [current, answer, submitAnswer, cardType]);
+  }, [current, answer, submitAnswer, cardType, isCloze]);
+
+  /**
+   * Intro cards are exposure, not recall: self-rated, persisted to FSRS
+   * (Again resurfaces the word sooner), and advance without a feedback step.
+   */
+  const handleIntro = useCallback(
+    (rating: Rating) => {
+      if (!current) return;
+      const elapsed = Date.now() - flipTimeRef.current;
+      void markWordIntroduced(current.word.id);
+      void rateCard(current.card.id, rating, elapsed);
+      nextCard();
+    },
+    [current, nextCard],
+  );
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -136,18 +171,28 @@ export function Session() {
         playWord(current.word.id);
         return;
       }
-      if (e.key === ' ' && !flipped && !grading) {
+      if (e.key === ' ' && !flipped && !grading && !noFlip) {
         e.preventDefault();
         flip();
         flipTimeRef.current = Date.now();
       }
-      if (e.key === 'Enter' && flipped && !grading && answer.trim()) {
+      if (e.key === 'Enter' && (flipped || isCloze) && !grading && answer.trim()) {
         handleSubmit();
+      }
+      // Enter = "Got it" on intro cards — skip when a button has focus, since
+      // the button's native Enter handling would also fire (double action).
+      if (
+        e.key === 'Enter' &&
+        isIntro &&
+        !grading &&
+        !(e.target instanceof HTMLButtonElement)
+      ) {
+        handleIntro(Rating.Good);
       }
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [flipped, grading, answer, handleSubmit, current, playWord]);
+  }, [flipped, grading, answer, handleSubmit, current, playWord, noFlip, isCloze, isIntro, handleIntro]);
 
   const handleNext = useCallback(() => {
     nextCard();
@@ -294,15 +339,22 @@ export function Session() {
       <div
         className={`card ${flipped ? 'card--flipped' : ''}`}
         onClick={() => {
-          if (!flipped && !grading) {
+          if (!flipped && !grading && !noFlip) {
             flip();
             flipTimeRef.current = Date.now();
           }
         }}
-        role="button"
-        tabIndex={0}
-        aria-label={flipped ? `${word.lemma}, ${word.pos}` : 'Tap to reveal'}
+        role={noFlip ? undefined : 'button'}
+        tabIndex={noFlip ? undefined : 0}
+        aria-label={
+          noFlip
+            ? undefined
+            : flipped
+              ? `${word.lemma}, ${word.pos}`
+              : 'Tap to reveal'
+        }
         onKeyDown={(e) => {
+          if (noFlip) return;
           if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             if (!flipped) {
@@ -322,8 +374,42 @@ export function Session() {
             {cardType === 'audio' && (
               <audio ref={audioRef} src={word.audio_word} preload="auto" />
             )}
-            <p className="card-gloss">{promptLabel}</p>
-            <p className="card-hint">{promptHint}</p>
+            {isIntro ? (
+              <>
+                <p className="card-hint">New word</p>
+                <h2 className="card-word">
+                  {word.gender && (
+                    <span className="card-article">{word.gender} </span>
+                  )}
+                  {word.lemma}
+                </h2>
+                {word.plural && word.plural !== word.lemma && (
+                  <p className="card-plural">Pl. {word.plural}</p>
+                )}
+                <p className="card-gloss">{word.gloss_en}</p>
+                {word.example_de && (
+                  <p className="card-example">{word.example_de}</p>
+                )}
+                {canPlay && (
+                  <button
+                    className="btn-pronounce"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      playWord(word.id);
+                    }}
+                    aria-label={`Pronounce ${word.lemma}`}
+                    title="Pronounce (P)"
+                  >
+                    <SpeakerIcon />
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="card-gloss">{promptLabel}</p>
+                <p className="card-hint">{promptHint}</p>
+              </>
+            )}
           </div>
 
           {/* ── Back: word + feedback ── */}
@@ -381,14 +467,6 @@ export function Session() {
                   <p className="card-example">{word.example_de}</p>
                 )}
               </>
-            )}
-
-            {/* Cloze: show the full sentence (with answer revealed after grading) */}
-            {cardType === 'cloze' && (
-              <p className="card-example">
-                {current.clozeText?.replace('_____', word.lemma) ??
-                  word.example_de}
-              </p>
             )}
 
             {/* Audio: replay button */}
@@ -476,8 +554,8 @@ export function Session() {
         </div>
       )}
 
-      {/* Input */}
-      {flipped && !grading && (
+      {/* Input (cloze cards show it immediately — they never flip) */}
+      {(flipped || isCloze) && !grading && (
         <div className="session-input-wrapper">
           <div className="session-input">
             <label htmlFor="session-answer" className="sr-only">
@@ -521,6 +599,25 @@ export function Session() {
         </div>
       )}
 
+      {/* Intro actions — self-rated exposure, no typed recall */}
+      {isIntro && !grading && (
+        <div className="intro-actions">
+          <button
+            className="btn-secondary"
+            onClick={() => handleIntro(Rating.Again)}
+          >
+            Show again
+          </button>
+          <button
+            ref={gotItBtnRef}
+            className="btn-primary"
+            onClick={() => handleIntro(Rating.Good)}
+          >
+            Got it
+          </button>
+        </div>
+      )}
+
       {/* Feedback */}
       {grading && (
         <div className={`feedback feedback--${grading}`} role="alert">
@@ -529,8 +626,15 @@ export function Session() {
             {grading === 'typo' && 'Almost'}
             {grading === 'wrong' && '✗'}
           </p>
-          <p className="feedback-correct">{correctForm}</p>
-          {grading !== 'correct' && (
+          <p className="feedback-correct">
+            {isCloze
+              ? (current.clozeText?.replace(
+                  '_____',
+                  word.cloze_answer ?? word.lemma,
+                ) ?? correctForm)
+              : correctForm}
+          </p>
+          {grading !== 'correct' && !isCloze && (
             <p className="feedback-hint">
               {grading === 'wrong' &&
                 word.pos === 'noun' &&

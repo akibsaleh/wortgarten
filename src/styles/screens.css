@@ -37,9 +37,11 @@
 }
 
 .home-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
+  font-weight: 800;
   font-size: var(--text-39);
-  color: var(--color-ink);
+  color: var(--color-accent-text);
+  letter-spacing: -0.01em;
 }
 
 .home-subtitle {
@@ -365,53 +367,62 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-neutral-2);
+  border: none;
   border-radius: var(--radius-card);
-  background: var(--color-paper);
+  background: var(--color-surface);
   color: var(--color-ink);
   font-size: var(--text-16);
   font-family: var(--font-sans);
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-clay-raised);
   transition: background var(--motion-fast) var(--ease),
-              border-color var(--motion-fast) var(--ease),
-              color var(--motion-fast) var(--ease);
+              color var(--motion-fast) var(--ease),
+              box-shadow var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
 }
 
 .onboarding-goal:hover {
-  border-color: var(--color-accent);
+  box-shadow: var(--shadow-clay);
+}
+
+.onboarding-goal:active {
+  transform: scale(0.96);
 }
 
 .onboarding-goal--active {
   background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-paper);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
-/* Audio play button */
+/* Audio play button — a big clay ball */
 .onboarding-play-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-6) var(--space-8);
-  border: 2px solid var(--color-accent);
+  border: none;
   border-radius: 50%;
-  background: transparent;
-  color: var(--color-accent);
+  background: var(--color-surface);
+  color: var(--color-accent-text);
   font-size: var(--text-16);
   font-family: var(--font-sans);
+  font-weight: 700;
   cursor: pointer;
-  transition: background var(--motion-fast) var(--ease),
+  box-shadow: var(--shadow-clay);
+  transition: box-shadow var(--motion-fast) var(--ease),
               transform var(--motion-fast) var(--ease);
 }
 
 .onboarding-play-btn:hover {
-  background: var(--color-accent);
-  color: var(--color-paper);
+  transform: translateY(-2px);
 }
 
 .onboarding-play-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
+  box-shadow: var(--shadow-clay-pressed);
 }
 
 .onboarding-play-icon {
@@ -639,13 +650,14 @@
   margin-bottom: var(--space-3);
 }
 
-/* Segmented control */
+/* Segmented control — recessed clay track, raised clay knob */
 .settings-segmented {
   display: flex;
   gap: var(--space-1);
   background: var(--color-neutral-1);
   border-radius: var(--radius-card);
   padding: var(--space-1);
+  box-shadow: var(--shadow-clay-input);
 }
 
 .settings-segment {
@@ -657,20 +669,18 @@
   cursor: pointer;
   font-size: var(--text-14);
   font-family: var(--font-sans);
-  font-weight: 400;
+  font-weight: 700;
   background: transparent;
   color: var(--color-neutral-4);
   transition: background var(--motion-fast) var(--ease),
-              color var(--motion-fast) var(--ease);
+              color var(--motion-fast) var(--ease),
+              box-shadow var(--motion-fast) var(--ease);
 }
 
-/* Soft border, not a shadow (spec §1.3: soft borders instead
-   of heavy shadows). Was pure white + an rgba shadow.       */
 .settings-segment--active {
-  background: var(--color-paper);
-  border: var(--border-soft);
+  background: var(--color-surface);
   color: var(--color-ink);
-  font-weight: 600;
+  box-shadow: var(--shadow-clay-raised);
 }
 
 .settings-row {
@@ -701,10 +711,11 @@
   padding: var(--space-2) var(--space-3);
   min-height: var(--touch-min);
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-neutral-2);
-  background: var(--color-paper);
+  border: none;
+  background: var(--color-surface-2);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  box-shadow: var(--shadow-clay-input);
 }
 
 .settings-note {
@@ -725,6 +736,7 @@
   border: none;
   cursor: pointer;
   background: var(--color-neutral-2);
+  box-shadow: var(--shadow-clay-input);
   transition: background var(--motion-fast) var(--ease);
 }
 
@@ -739,8 +751,8 @@
   width: var(--space-4);
   height: var(--space-4);
   border-radius: 50%;
-  background: var(--color-paper);
-  border: var(--border-soft);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-clay-raised);
   transition: transform var(--motion-fast) var(--ease);
 }
 

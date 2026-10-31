@@ -1,4 +1,4 @@
-import wordsData from '../../public/words.json';
+import wordsData from '../assets/words.json';
 import { db, type Word, type Card, type Settings } from './schema';
 
 const DEFAULT_SETTINGS: Settings = {
@@ -24,15 +24,21 @@ const DEFAULT_SETTINGS: Settings = {
  * Importing a newer version upserts word content without touching SRS state.
  * PLAN.md §6: cards, reviewLogs, sessions, settings are never touched.
  */
-export async function importWords(): Promise<{ imported: number; skipped: number }> {
-  const current = await db.settings.get(1);
-  if (current?.data_version === wordsData.dataVersion) {
-    return { imported: 0, skipped: wordsData.words.length };
-  }
-
+export async function importWords(): Promise<{
+  imported: number;
+  skipped: number;
+}> {
   const words = wordsData.words as Word[];
 
-  await db.transaction('rw', db.words, db.cards, db.settings, async () => {
+  return db.transaction('rw', db.words, db.cards, db.settings, async () => {
+    // Read inside the transaction: StrictMode double-invokes effects in dev,
+    // and IndexedDB serializes rw transactions on these tables, so a
+    // concurrent import sees the committed dataVersion and no-ops.
+    const current = await db.settings.get(1);
+    if (current?.data_version === wordsData.dataVersion) {
+      return { imported: 0, skipped: words.length };
+    }
+
     // Upsert word content (never touches SRS state)
     await db.words.bulkPut(words);
 
@@ -59,6 +65,7 @@ export async function importWords(): Promise<{ imported: number; skipped: number
           lapses: 0,
           state: 0, // New
           last_review: null,
+          introduced_at: null,
         });
       }
       if (!existingCardIds.has(prodId)) {
@@ -75,6 +82,7 @@ export async function importWords(): Promise<{ imported: number; skipped: number
           lapses: 0,
           state: 0, // New
           last_review: null,
+          introduced_at: null,
         });
       }
     }
@@ -97,11 +105,11 @@ export async function importWords(): Promise<{ imported: number; skipped: number
       notification_time: current?.notification_time ?? '09:00',
     };
     if (!current) {
-      await db.settings.add({ ...DEFAULT_SETTINGS, ...settingsUpdate });
+      await db.settings.put({ ...DEFAULT_SETTINGS, ...settingsUpdate });
     } else {
       await db.settings.update(1, settingsUpdate);
     }
-  });
 
-  return { imported: words.length, skipped: 0 };
+    return { imported: words.length, skipped: 0 };
+  });
 }

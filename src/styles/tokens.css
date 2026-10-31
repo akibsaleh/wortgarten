@@ -4,28 +4,35 @@
    ========================================================== */
 
 :root {
-  /* ── Palette ─────────────────────────────────────────── */
-  --color-paper:       #FBFAF7;          /* warm off-white, never pure white          */
-  --color-ink:         #23282D;          /* primary text, 14.2:1 on paper            */
-  --color-accent:      #3F7D5D;          /* moss green — only accent                 */
-  --color-accent-text: #2E5E46;          /* accent-as-text on paper, 7.2:1           */
-  --color-success:     #3F7D5D;          /* success = accent                         */
-  --color-error:       #B3563B;          /* muted terracotta, never neon red          */
+  /* ── Palette — Claymorphism (light, lilac clay world) ─────
+     Third design direction (owner decision 2026-09-16), after
+     zen-paper and modern-futuristic. Token NAMES are stable
+     across redesigns; only values move. All text pairings meet
+     WCAG 2.2 AA (≥4.5:1) — ratios verified per W3C formula.    */
+  --color-paper:       #EFEBF7;          /* lilac-mist page background; also white text on the accent fill */
+  --color-surface:     #FFFFFF;          /* clay card — puffy white                                  */
+  --color-surface-2:   #F6F3FC;          /* inputs, chips, segments — faint violet                    */
+  --color-ink:         #322E48;          /* deep violet ink, 11:1 on background, 13:1 on card          */
+  --color-accent:      #6D5AE0;          /* juicy violet — the single accent; white on it is 5.0:1     */
+  --color-on-accent:   #FFFFFF;          /* text/icon on accent fills, 5.0:1                          */
+  --color-accent-text: #4A3EDB;          /* accent-as-text/link on background, 6.0:1                   */
+  --color-success:     #257247;          /* leaf green — 5.9:1 on card, 5.0:1 on background            */
+  --color-error:       #B8402A;          /* clay coral — 4.7:1 on background, never neon               */
 
-  /* Gender colors (≥4.5:1 on paper) */
-  --color-der:         #3B6EA5;          /* soft blue  — masculine                   */
-  --color-die:         #9E4B63;          /* muted rose — feminine                    */
-  --color-das:         #8A6D1F;          /* warm sand  — neuter                      */
+  /* Gender colors — ≥4.5:1 as text on the white clay card */
+  --color-der:         #2B5CB8;          /* masculine — clay blue, 6.3:1               */
+  --color-die:         #C22E63;          /* feminine  — clay rose, 5.4:1               */
+  --color-das:         #8F6C00;          /* neuter    — clay gold, 4.9:1               */
 
-  /* 4 warm-gray neutrals — neutral-3/4 darkened for ≥4.5:1 on paper (WCAG AA) */
-  --color-neutral-1:   #E8E6E1;          /* lightest — subtle dividers                */
-  --color-neutral-2:   #D1CFC9;          /* borders, input outlines                  */
-  --color-neutral-3:   #74726C;          /* secondary text, hints   (4.6:1 on paper) */
-  --color-neutral-4:   #6B6963;          /* disabled text, metadata (5.3:1 on paper) */
+  /* 4 cool-violet neutrals — 3/4 tuned for ≥4.5:1 on background (WCAG AA) */
+  --color-neutral-1:   #E2DCF0;          /* faint dividers, track fills               */
+  --color-neutral-2:   #CFC8E4;          /* borders, input outlines                  */
+  --color-neutral-3:   #69638A;          /* secondary text, hints   (4.8:1 on bg)     */
+  --color-neutral-4:   #5B5578;          /* disabled text, metadata (6.0:1 on bg)     */
 
   /* ── Typography ──────────────────────────────────────── */
   --font-serif: 'Source Serif 4', 'Newsreader', Georgia, serif;
-  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans:  'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Modular scale 1.25 */
   --text-12: 12px;
@@ -55,10 +62,36 @@
   --space-16: 64px;
 
   /* ── Shape ───────────────────────────────────────────── */
-  --radius-card:  12px;                 /* cards, chips                            */
-  --radius-lg:    16px;                 /* sheets, large surfaces                  */
+  --radius-card:  20px;                 /* clay cards, chips — chunky              */
+  --radius-lg:    24px;                 /* sheets, large surfaces                  */
   --border-soft:  1px solid var(--color-neutral-2);
   --layout-max:   640px;
+
+  /* ── Clay shadows ─────────────────────────────────────────
+     The claymorphism signature: every raised element combines
+     a soft outer drop shadow (down-right, as if lit from
+     top-left) with an inset top-left highlight, so surfaces
+     read as puffy clay rather than flat panes. Pressed/active
+     states invert into inset shadow. All static — reduced
+     motion is unaffected. Ink-tinted, never pure black.       */
+  --shadow-clay:
+    10px 14px 28px rgba(50, 46, 72, 0.14),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.95),
+    inset -3px -3px 8px rgba(50, 46, 72, 0.06);
+  --shadow-clay-raised:
+    6px 8px 16px rgba(50, 46, 72, 0.12),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.9);
+  --shadow-clay-pressed:
+    inset 4px 4px 10px rgba(50, 46, 72, 0.14),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.7);
+  --shadow-clay-input:
+    inset 3px 3px 8px rgba(50, 46, 72, 0.10),
+    inset -1px -1px 4px rgba(255, 255, 255, 0.8);
+  --shadow-focus:       0 0 0 3px rgba(109, 90, 224, 0.30);
+  --shadow-banner:      0 -6px 24px rgba(50, 46, 72, 0.10);
+  --gradient-backdrop:
+    radial-gradient(900px 700px at 18% -10%, rgba(255, 255, 255, 0.85), transparent 60%),
+    var(--color-paper);
 
   /* ── Motion ──────────────────────────────────────────── */
   --motion-fast:  120ms;                /* hovers, chip appearance                 */
