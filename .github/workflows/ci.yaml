@@ -45,7 +45,7 @@ jobs:
           cache-to: type-gha,mode=max
 
   publish:
-    needs: [linte, test, build]
+    needs: [lint, test, build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
